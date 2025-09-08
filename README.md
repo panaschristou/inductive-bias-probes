@@ -51,7 +51,7 @@ For quick prototyping, pass in `--num_train_trajectories 1000`.
 
 ## Pretraining
 
-The training code is based on Andrej Karpathy's [nanoGPT](https://github.com/karpathy/nanoGPT) library. To train the model, run the following in `inductivebiasprobes/experiments/physics`. Note the following code assumes 8 GPUs. 
+The training code is based on Andrej Karpathy's [nanoGPT](https://github.com/karpathy/nanoGPT) library. To train the model, run the following in `inductivebiasprobes/experiments/physics`. Note the following code assumes 8 GPUs. You can also download the checkpoints used in the paper [from here](https://drive.google.com/drive/folders/1qfdwQE2LpeZ1shGyrbX5y4xwze-DLbCF?usp=share_link).
 
 ```
 NUM_GPUS=8
