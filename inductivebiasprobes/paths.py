@@ -16,9 +16,9 @@ OTHELLO_CONFIG_DIR = CONFIG_DIR / "othello"
 
 # Data directories
 # If you have an ephemeral drive, you can set this to the path of the ephemeral drive.
-DATA_DIR = Path("/nvme/data").resolve()
+# DATA_DIR = Path("/nvme/data").resolve()
 # If you don't have an ephemeral drive, you can set this to the path of the BASE_DIR.
-# DATA_DIR = BASE_DIR / "data"
+DATA_DIR = BASE_DIR / "data"
 PHYSICS_DATA_DIR = DATA_DIR / "physics"
 GRIDWORLD_DATA_DIR = DATA_DIR / "gridworld"
 OTHELLO_DATA_DIR = DATA_DIR / "othello"
