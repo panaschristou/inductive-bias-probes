@@ -77,6 +77,22 @@ class ModelConfig:
     pscan: bool | None = None  # use parallel scan mode or sequential mode when training
     use_cuda: bool | None = None  # use official CUDA implementation when training
 
+    # Physics auxiliary-loss configs
+    use_force_aux_loss: bool = False
+    force_aux_dim: int | None = None
+    force_loss_weight: float = 0.0
+    force_aux_mask_id: int | float | None = None
+    use_force_law_loss: bool = False
+    force_law_loss_weight: float = 0.0
+    gravitational_constant: float = 39.4784176044
+    normalize_force_law: bool = True
+    use_hamiltonian_aux_loss: bool = False
+    hamiltonian_loss_weight: float = 0.0
+    hamiltonian_aux_mask_id: int | float | None = None
+    use_angular_momentum_aux_loss: bool = False
+    angular_momentum_loss_weight: float = 0.0
+    angular_momentum_aux_mask_id: int | float | None = None
+
     def __post_init__(self):
         self.d_inner = None
         if self.expand_factor is not None:
@@ -84,6 +100,12 @@ class ModelConfig:
 
         if self.dt_rank == "auto":
             self.dt_rank = math.ceil(self.n_embd / 16)
+
+        if (
+            self.force_aux_dim is None
+            and (self.use_force_aux_loss or self.use_force_law_loss)
+        ):
+            self.force_aux_dim = 2
 
 
 class Model(nn.Module):
@@ -105,6 +127,7 @@ class Model(nn.Module):
             self._init_continuous_output()
 
         self._init_architecture()
+        self._init_auxiliary_heads()
 
         # init all weights
         self.apply(self._init_weights)
@@ -227,6 +250,19 @@ class Model(nn.Module):
             output_size = math.prod(output_size)
         self.output_head = nn.Linear(self.config.n_embd, output_size)
 
+    def _init_auxiliary_heads(self):
+        """Initialize optional task heads used only by auxiliary losses."""
+        if self.config.force_aux_dim is not None and (
+            self.config.use_force_aux_loss or self.config.use_force_law_loss
+        ):
+            self.force_aux_head = nn.Linear(
+                self.config.n_embd, self.config.force_aux_dim
+            )
+        if self.config.use_hamiltonian_aux_loss:
+            self.hamiltonian_aux_head = nn.Linear(self.config.n_embd, 1)
+        if self.config.use_angular_momentum_aux_loss:
+            self.angular_momentum_aux_head = nn.Linear(self.config.n_embd, 1)
+
     def _init_architecture(self):
         """Initialize the core architecture (GPT, Mamba, RNN, or LSTM)."""
         if self.config.model_type == "gpt":
@@ -280,7 +316,19 @@ class Model(nn.Module):
                 batch_first=True,
             )
 
-    def forward(self, x, targets=None, target_callback=None, loss_name=None, return_reps=False):
+    def forward(
+        self,
+        x,
+        targets=None,
+        target_callback=None,
+        loss_name=None,
+        return_reps=False,
+        force_aux_targets=None,
+        full_state_targets=None,
+        hamiltonian_aux_targets=None,
+        angular_momentum_aux_targets=None,
+        return_loss_components=False,
+    ):
         """Forward pass through the model."""
         b, t, input_dim = x.size()  # batch size, sequence length
         assert (
@@ -354,8 +402,121 @@ class Model(nn.Module):
                 loss = (element_losses * mask).sum(axis=(1, 2)) / (
                     mask.sum(axis=(1, 2)) + 1e-8
                 )
-            return output, loss
+            components = {"task_loss": loss}
+            total_loss = loss
+            if self.config.use_force_aux_loss and force_aux_targets is not None:
+                force_pred = self.force_aux_head(x)
+                force_loss = self._masked_vector_loss(
+                    force_pred,
+                    force_aux_targets,
+                    self.config.force_aux_mask_id,
+                )
+                total_loss = total_loss + self.config.force_loss_weight * force_loss
+                components["force_aux_loss"] = force_loss
+            if self.config.use_force_law_loss and full_state_targets is not None:
+                force_pred = self.force_aux_head(x)
+                law_targets = self._force_from_full_state(full_state_targets)
+                force_law_loss = self._masked_vector_loss(
+                    force_pred,
+                    law_targets,
+                    mask_id=None,
+                    extra_mask=self._valid_full_state_mask(full_state_targets),
+                )
+                total_loss = (
+                    total_loss
+                    + self.config.force_law_loss_weight * force_law_loss
+                )
+                components["force_law_loss"] = force_law_loss
+            if (
+                self.config.use_hamiltonian_aux_loss
+                and hamiltonian_aux_targets is not None
+            ):
+                hamiltonian_pred = self.hamiltonian_aux_head(x)
+                hamiltonian_loss = self._masked_vector_loss(
+                    hamiltonian_pred,
+                    hamiltonian_aux_targets,
+                    self.config.hamiltonian_aux_mask_id,
+                )
+                total_loss = (
+                    total_loss
+                    + self.config.hamiltonian_loss_weight * hamiltonian_loss
+                )
+                components["hamiltonian_aux_loss"] = hamiltonian_loss
+            if (
+                self.config.use_angular_momentum_aux_loss
+                and angular_momentum_aux_targets is not None
+            ):
+                angular_momentum_pred = self.angular_momentum_aux_head(x)
+                angular_momentum_loss = self._masked_vector_loss(
+                    angular_momentum_pred,
+                    angular_momentum_aux_targets,
+                    self.config.angular_momentum_aux_mask_id,
+                )
+                total_loss = (
+                    total_loss
+                    + self.config.angular_momentum_loss_weight
+                    * angular_momentum_loss
+                )
+                components["angular_momentum_aux_loss"] = angular_momentum_loss
+            components["total_loss"] = total_loss
+            if return_loss_components:
+                return output, total_loss, components
+            return output, total_loss
         return output
+
+    def _masked_vector_loss(
+        self,
+        pred,
+        target,
+        mask_id=None,
+        extra_mask=None,
+    ):
+        mask = torch.ones_like(target, dtype=torch.bool)
+        if mask_id is not None:
+            if mask_id == float("inf"):
+                mask &= torch.isfinite(target)
+            else:
+                mask &= target != mask_id
+        else:
+            mask &= torch.isfinite(target)
+        if extra_mask is not None:
+            mask &= extra_mask
+        safe_target = torch.where(mask, target, torch.zeros_like(target))
+        element_losses = F.mse_loss(pred, safe_target, reduction="none")
+        mask_float = mask.float()
+        loss = (element_losses * mask_float).sum(axis=(1, 2)) / (
+            mask_float.sum(axis=(1, 2)) + 1e-8
+        )
+        return loss
+
+    def _valid_full_state_mask(self, full_state):
+        relative_position = full_state[..., :2]
+        masses = full_state[..., 4:6]
+        finite = torch.isfinite(full_state).all(dim=-1, keepdim=True)
+        nonzero_radius = torch.linalg.norm(relative_position, dim=-1, keepdim=True) > 0
+        positive_masses = (masses > 0).all(dim=-1, keepdim=True)
+        return (finite & nonzero_radius & positive_masses).expand(
+            *full_state.shape[:-1], self.config.force_aux_dim
+        )
+
+    def _force_from_full_state(self, full_state):
+        relative_position = full_state[..., :2]
+        m_light = full_state[..., 4:5]
+        m_heavy = full_state[..., 5:6]
+        radius = torch.linalg.norm(relative_position, dim=-1, keepdim=True)
+        safe_radius = torch.clamp(radius, min=1e-12)
+        force = (
+            -self.config.gravitational_constant
+            * m_light
+            * m_heavy
+            * relative_position
+            / safe_radius.pow(3)
+        )
+        force = torch.where(torch.isfinite(force), force, torch.zeros_like(force))
+        if self.config.normalize_force_law:
+            denom = force.abs().amax(dim=1, keepdim=True).clamp(min=1e-12)
+            force = force / denom
+        return force
 
     def _init_weights(self, module):
         """Initialize the weights - the same for all architectures."""

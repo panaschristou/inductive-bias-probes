@@ -1,5 +1,25 @@
 # Force-Aware Implementation Checklist
 
+## Current Implementation Status
+
+Implemented now:
+
+- Optional force-vector auxiliary head and masked force-vector loss.
+- Optional Newtonian force-law loss from `full_state_*` targets.
+- Optional Hamiltonian and angular-momentum scalar auxiliary heads.
+- Optional auxiliary target loading in the shared batch path.
+- Physics training routing for force-aware next-token pretraining.
+- Separate experiment/checkpoint naming with `experiment_name`.
+- Data-generation option `--save_pretraining_forces` for ordinary train/val/test force and state targets.
+- Prototype configs for force auxiliary, force-law, and Hamiltonian/angular-momentum auxiliary pretraining.
+
+Still needs runtime validation in the project environment:
+
+- Model-forward smoke tests with `torch` installed.
+- YAML/config loading smoke tests with project dependencies installed.
+- Tiny training run on generated data.
+- Transfer comparison against scratch and normal `next_token`.
+
 ## Phase 0: Baseline Confirmation
 
 - [ ] Confirm small physics data exists from `--num_train_trajectories 1000`.

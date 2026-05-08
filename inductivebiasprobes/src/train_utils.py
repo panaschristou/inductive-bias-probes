@@ -1,3 +1,4 @@
+import argparse
 import copy
 import json
 import logging
@@ -104,6 +105,52 @@ def add_common_args(parser):
     parser.add_argument(
         "--pretrained", default="scratch",# choices=["scratch", "next_token", "state"]
     )
+    parser.add_argument(
+        "--experiment_name",
+        default=None,
+        help="Optional checkpoint/run directory name for this experiment",
+    )
+
+    # Physics auxiliary objectives
+    parser.add_argument(
+        "--use_force_aux_loss",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Add supervised force-vector auxiliary loss",
+    )
+    parser.add_argument("--force_loss_weight", type=float, default=None)
+    parser.add_argument("--force_aux_dim", type=int, default=None)
+    parser.add_argument("--force_aux_mask_id", type=float, default=None)
+    parser.add_argument(
+        "--use_force_law_loss",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Add Newtonian force-law consistency loss",
+    )
+    parser.add_argument("--force_law_loss_weight", type=float, default=None)
+    parser.add_argument("--gravitational_constant", type=float, default=None)
+    parser.add_argument(
+        "--normalize_force_law",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Normalize equation-implied force vectors per sequence before loss",
+    )
+    parser.add_argument(
+        "--use_hamiltonian_aux_loss",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Add supervised Hamiltonian/energy auxiliary loss",
+    )
+    parser.add_argument("--hamiltonian_loss_weight", type=float, default=None)
+    parser.add_argument("--hamiltonian_aux_mask_id", type=float, default=None)
+    parser.add_argument(
+        "--use_angular_momentum_aux_loss",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Add supervised angular-momentum auxiliary loss",
+    )
+    parser.add_argument("--angular_momentum_loss_weight", type=float, default=None)
+    parser.add_argument("--angular_momentum_aux_mask_id", type=float, default=None)
 
     # White noise dataset
     parser.add_argument("--white_noise_dataset_size", type=int, default=100)
@@ -226,6 +273,7 @@ def get_sequential_batch(
     config,
     paired=False,
     full_split=False,
+    return_aux=False,
 ):
     # We recreate np.memmap every batch to avoid a memory leak, as per
     # https://stackoverflow.com/questions/45132940/numpy-memmap-memory-usage-want-to-iterate-once/61472122#61472122
@@ -299,6 +347,81 @@ def get_sequential_batch(
                 f"Unsupported indices shape: {unmasked_column_indices.shape}"
             )
         y = y_masked
+    aux = {}
+    if return_aux:
+        if config.get("use_force_aux_loss"):
+            force_file = config.get(f"{split}_force_aux_target_file")
+            if force_file is None:
+                raise ValueError(f"Missing {split}_force_aux_target_file in config")
+            force_data = np.load(force_file, mmap_mode="r")
+            force_slice = (
+                slice(1, config["block_size"] + 1)
+                if config.get("force_aux_shift_targets", not paired)
+                else slice(0, config["block_size"])
+            )
+            aux["force_aux_targets"] = torch.stack(
+                [
+                    torch.from_numpy(np.array(force_data[i, force_slice])).clone()
+                    for i in ix
+                ]
+            ).float()
+        if config.get("use_force_law_loss"):
+            full_state_file = config.get(f"{split}_full_state_file")
+            if full_state_file is None:
+                raise ValueError(f"Missing {split}_full_state_file in config")
+            full_state_data = np.load(full_state_file, mmap_mode="r")
+            full_state_slice = (
+                slice(1, config["block_size"] + 1)
+                if config.get("force_law_shift_targets", not paired)
+                else slice(0, config["block_size"])
+            )
+            aux["full_state_targets"] = torch.stack(
+                [
+                    torch.from_numpy(np.array(full_state_data[i, full_state_slice])).clone()
+                    for i in ix
+                ]
+            ).float()
+        if config.get("use_hamiltonian_aux_loss"):
+            hamiltonian_file = config.get(f"{split}_hamiltonian_aux_target_file")
+            if hamiltonian_file is None:
+                raise ValueError(
+                    f"Missing {split}_hamiltonian_aux_target_file in config"
+                )
+            hamiltonian_data = np.load(hamiltonian_file, mmap_mode="r")
+            hamiltonian_slice = (
+                slice(1, config["block_size"] + 1)
+                if config.get("hamiltonian_aux_shift_targets", not paired)
+                else slice(0, config["block_size"])
+            )
+            aux["hamiltonian_aux_targets"] = torch.stack(
+                [
+                    torch.from_numpy(np.array(hamiltonian_data[i, hamiltonian_slice])).clone()
+                    for i in ix
+                ]
+            ).float()
+        if config.get("use_angular_momentum_aux_loss"):
+            angular_momentum_file = config.get(
+                f"{split}_angular_momentum_aux_target_file"
+            )
+            if angular_momentum_file is None:
+                raise ValueError(
+                    f"Missing {split}_angular_momentum_aux_target_file in config"
+                )
+            angular_momentum_data = np.load(angular_momentum_file, mmap_mode="r")
+            angular_momentum_slice = (
+                slice(1, config["block_size"] + 1)
+                if config.get("angular_momentum_aux_shift_targets", not paired)
+                else slice(0, config["block_size"])
+            )
+            aux["angular_momentum_aux_targets"] = torch.stack(
+                [
+                    torch.from_numpy(
+                        np.array(angular_momentum_data[i, angular_momentum_slice])
+                    ).clone()
+                    for i in ix
+                ]
+            ).float()
+
     if config["use_float_x"]:
         x = x.float()
     else:
@@ -307,6 +430,8 @@ def get_sequential_batch(
         y = y.float()
     else:
         y = y.long()
+    if return_aux:
+        return x, y, aux
     return x, y
 
 
@@ -314,8 +439,9 @@ def get_batch(
     split,
     config,
     full_split=False,
+    return_aux=False,
 ):
-    x, y = get_sequential_batch(
+    batch = get_sequential_batch(
         split,
         config,
         paired=config["predict_type"]
@@ -330,16 +456,65 @@ def get_batch(
         )
         or "white_noise" in config["predict_type"],
         full_split=full_split,
+        return_aux=return_aux,
     )
+    if return_aux:
+        x, y, aux = batch
+    else:
+        x, y = batch
+        aux = None
     device, device_type = config["device"], config["device_type"]
     if device_type == "cuda":
         x, y = (
             x.pin_memory().to(device, non_blocking=True),
             y.pin_memory().to(device, non_blocking=True),
         )
+        if aux is not None:
+            aux = {
+                k: v.pin_memory().to(device, non_blocking=True)
+                for k, v in aux.items()
+            }
     else:
         x, y = x.to(device), y.to(device)
+        if aux is not None:
+            aux = {k: v.to(device) for k, v in aux.items()}
+    if return_aux:
+        return x, y, aux
     return x, y
+
+
+def uses_auxiliary_losses(config):
+    return bool(
+        config.get("use_force_aux_loss")
+        or config.get("use_force_law_loss")
+        or config.get("use_hamiltonian_aux_loss")
+        or config.get("use_angular_momentum_aux_loss")
+    )
+
+
+def forward_with_optional_aux(
+    model,
+    X,
+    Y,
+    aux,
+    target_callback=None,
+    loss_name=None,
+):
+    if aux is None:
+        output, loss = model(X, Y, target_callback, loss_name=loss_name)
+        return output, loss, {"task_loss": loss, "total_loss": loss}
+    output, loss, components = model(
+        X,
+        Y,
+        target_callback,
+        loss_name=loss_name,
+        force_aux_targets=aux.get("force_aux_targets"),
+        full_state_targets=aux.get("full_state_targets"),
+        hamiltonian_aux_targets=aux.get("hamiltonian_aux_targets"),
+        angular_momentum_aux_targets=aux.get("angular_momentum_aux_targets"),
+        return_loss_components=True,
+    )
+    return output, loss, components
 
 
 def get_lr(iter_num, config):
@@ -369,30 +544,56 @@ def estimate_loss(
     """Estimate loss on train and validation sets."""
     model.eval()
     out = {}
-    # First for train.
-    batch_size = min(config["batch_size"], config["num_data_points"])
-    losses = torch.zeros(config["eval_iters"] * batch_size)
+    return_aux = uses_auxiliary_losses(config)
+    component_losses = {"train": {}, "val": {}}
+
+    def combine_loss_chunks(chunks):
+        if not chunks:
+            return np.array([])
+        if chunks[0].dim() == 0:
+            return torch.stack(chunks).numpy()
+        return torch.cat(chunks).numpy()
+
+    train_losses = []
     for k in range(config["eval_iters"]):
-        X, Y = get_batch("train", config)
+        batch = get_batch("train", config, return_aux=return_aux)
+        if return_aux:
+            X, Y, aux = batch
+        else:
+            X, Y = batch
+            aux = None
         with torch.no_grad():
-            output, loss = model(X, Y, target_callback, loss_name=loss_name)
+            output, loss, components = forward_with_optional_aux(
+                model, X, Y, aux, target_callback, loss_name
+            )
         if loss_callback is not None:
             loss = loss_callback(output, Y)
-        start_idx = k * batch_size
-        end_idx = (k + 1) * batch_size
-        losses[start_idx:end_idx] = loss
-    out["train"] = losses
+        train_losses.append(loss.cpu())
+        for name, component_loss in components.items():
+            component_losses["train"].setdefault(name, []).append(
+                component_loss.cpu()
+            )
+    out["train"] = combine_loss_chunks(train_losses)
 
     # Process validation in batches to avoid memory issues
     val_losses = []
     val_eval_iters = config.get("val_eval_iters", config["eval_iters"])
     for k in range(val_eval_iters):
-        X, Y = get_batch("val", config)
+        batch = get_batch("val", config, return_aux=return_aux)
+        if return_aux:
+            X, Y, aux = batch
+        else:
+            X, Y = batch
+            aux = None
         with torch.no_grad():
-            output, loss = model(X, Y, target_callback, loss_name=loss_name)
+            output, loss, components = forward_with_optional_aux(
+                model, X, Y, aux, target_callback, loss_name
+            )
         if loss_callback is not None:
             loss = loss_callback(output, Y)
         val_losses.append(loss.cpu())
+        for name, component_loss in components.items():
+            component_losses["val"].setdefault(name, []).append(component_loss.cpu())
 
     # Concatenate all validation losses
     if val_losses:
@@ -403,6 +604,10 @@ def estimate_loss(
             out["val"] = torch.cat(val_losses).numpy()
     else:
         out["val"] = np.array([])
+    for split_name, split_components in component_losses.items():
+        for name, values in split_components.items():
+            if values:
+                out[f"{split_name}_{name}"] = combine_loss_chunks(values)
     model.train()
     return out
 
@@ -467,6 +672,20 @@ def init_model(config, ckpt_dir, ddp):
         "output_vocab_size",
         "pscan",
         "use_cuda",
+        "use_force_aux_loss",
+        "force_aux_dim",
+        "force_loss_weight",
+        "force_aux_mask_id",
+        "use_force_law_loss",
+        "force_law_loss_weight",
+        "gravitational_constant",
+        "normalize_force_law",
+        "use_hamiltonian_aux_loss",
+        "hamiltonian_loss_weight",
+        "hamiltonian_aux_mask_id",
+        "use_angular_momentum_aux_loss",
+        "angular_momentum_loss_weight",
+        "angular_momentum_aux_mask_id",
     }
     all_configs = fixed_configs | mutable_configs
     if config.get("resume_from_last_ckpt"):
@@ -540,7 +759,11 @@ def init_model(config, ckpt_dir, ddp):
         optimizer_state = None
     model = model.to(config["device"])
 
-    if config["no_compile"] or "mamba" in config["model_type"]:
+    if (
+        config["no_compile"]
+        or "mamba" in config["model_type"]
+        or uses_auxiliary_losses(config)
+    ):
         import torch._dynamo as dynamo
 
         dynamo.config.disable = True
@@ -709,11 +932,22 @@ def train(
                         "val/loss": val_loss,
                         "lr": lr,
                         "mfu": running_mfu * 100,
+                        **{
+                            key.replace("_", "/", 1): value.mean()
+                            for key, value in losses.items()
+                            if key.startswith(("train_", "val_"))
+                        },
                     }
                 )
 
         # Forward and backward pass
-        X, Y = get_batch(split="train", config=config)
+        return_aux = uses_auxiliary_losses(config)
+        batch = get_batch(split="train", config=config, return_aux=return_aux)
+        if return_aux:
+            X, Y, aux = batch
+        else:
+            X, Y = batch
+            aux = None
 
         for micro_step in range(config["gradient_accumulation_steps"]):
             if ddp:
@@ -723,7 +957,14 @@ def train(
             with nullcontext() if config["device"] == "cpu" else torch.amp.autocast(
                 device_type="cuda", dtype=ptdtype
             ):
-                _, loss = model(X, Y, target_callback, loss_name=loss_name)
+                _, loss, _ = forward_with_optional_aux(
+                    model,
+                    X,
+                    Y,
+                    aux,
+                    target_callback=target_callback,
+                    loss_name=loss_name,
+                )
                 loss = loss.mean()
                 loss = loss / config["gradient_accumulation_steps"]
             scaler.scale(loss).backward()

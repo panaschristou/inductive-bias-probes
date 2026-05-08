@@ -1,0 +1,16 @@
+block_size: 999
+experiment_name: next_token_force_law
+force_aux_dataset: two_body
+force_aux_dim: 2
+force_aux_mask_id: .inf
+force_law_loss_weight: 0.1
+input_dim: 2
+input_vocab_size: 7003
+mask_id: 7000
+normalize_force_law: true
+num_data_points: 1000
+output_dim: 2
+output_vocab_size: 7003
+predict_type: next_token
+use_force_aux_loss: false
+use_force_law_loss: true

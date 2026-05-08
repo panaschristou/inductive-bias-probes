@@ -68,6 +68,7 @@ TRAJ_XY_MIN = -50.0
 TRAJ_XY_MAX = 50.0
 FORCE_MAG_MIN = 2e-7
 FORCE_MAG_MAX = 5e-3
+GRAVITATIONAL_CONSTANT = 39.4784176044
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -142,6 +143,11 @@ def parse_args():
         "--two_body_only",
         action="store_true",
         help="Only generate two-body problems",
+    )
+    parser.add_argument(
+        "--save_pretraining_forces",
+        action="store_true",
+        help="Also save state and force targets for ordinary train/val/test splits",
     )
     parser.add_argument(
         "--debug",
@@ -232,8 +238,15 @@ def process_multiplanet_states(
     return relative_position, relative_velocity, relative_masses, planet_masses, sun_mass
 
 
-def process_multiplanet_fn_of_state(fn_of_state_list, num_points, force_magnitude_mask_id, force_vector_mask_id):
+def process_multiplanet_fn_of_state(
+    fn_of_state_list,
+    num_points,
+    force_magnitude_mask_id,
+    force_vector_mask_id,
+):
     planet_force_vectors = np.array([x.force_vector for x in fn_of_state_list])
+    num_planets = planet_force_vectors.shape[0]
+    num_bodies = num_planets + 1
     force_vector_dim = planet_force_vectors.shape[-1]
     sun_force_vector = np.sum(planet_force_vectors, axis=0, keepdims=True)
     force_vectors_3d = np.concatenate([planet_force_vectors, sun_force_vector], axis=0)
@@ -250,16 +263,45 @@ def process_multiplanet_fn_of_state(fn_of_state_list, num_points, force_magnitud
     ]
     # Standardize force vectors to have unit interval (just for solar system). 
     max_force_vec = np.max(np.abs(force_vectors), axis=0)
-    force_vectors = force_vectors / max_force_vec
+    force_vectors = force_vectors / np.clip(max_force_vec, 1e-12, None)
     # Add 0s as first timestep to account for dt token
     force_vectors = np.concatenate([np.zeros((1, force_vector_dim)), force_vectors], axis=0)[:num_points, :]
     force_magnitudes = np.concatenate([np.zeros((1, 1)), force_magnitudes], axis=0)[:num_points, :]
-    # Because states are only used for two-body problems we can mask the sun's force outputs. 
-    # Set every even timestep to the mask index, both for force vectors and magnitudes
-    even_timesteps = np.arange(0, num_points, 2)
-    force_vectors[even_timesteps, :] = force_vector_mask_id
-    force_magnitudes[even_timesteps, :] = force_magnitude_mask_id
+    # Mask the dt token and each sun/star timestep. For two-body data this is
+    # equivalent to masking every even timestep, but this form also supports
+    # multi-planet pretraining splits.
+    sun_timesteps = np.arange(1 + num_planets, num_points, num_bodies)
+    masked_timesteps = np.concatenate(([0], sun_timesteps))
+    force_vectors[masked_timesteps, :] = force_vector_mask_id
+    force_magnitudes[masked_timesteps, :] = force_magnitude_mask_id
     return force_vectors, force_magnitudes
+
+
+def compute_two_body_invariants_from_full_state(
+    full_state,
+    gravitational_constant=GRAVITATIONAL_CONSTANT,
+    mask_id=float("inf"),
+):
+    """Compute scalar Hamiltonian and angular momentum targets from full state."""
+    relative_position = full_state[:, :2]
+    relative_velocity = full_state[:, 2:4]
+    m_light = full_state[:, 4:5]
+    m_heavy = full_state[:, 5:6]
+    radius = np.linalg.norm(relative_position, axis=1, keepdims=True)
+    valid = (radius > 0) & (m_light > 0) & (m_heavy > 0)
+    reduced_mass = (m_light * m_heavy) / np.clip(m_light + m_heavy, 1e-12, None)
+    kinetic = 0.5 * reduced_mass * np.sum(relative_velocity**2, axis=1, keepdims=True)
+    potential = -gravitational_constant * m_light * m_heavy / np.clip(
+        radius, 1e-12, None
+    )
+    hamiltonian = kinetic + potential
+    angular_momentum = reduced_mass * (
+        relative_position[:, 0:1] * relative_velocity[:, 1:2]
+        - relative_position[:, 1:2] * relative_velocity[:, 0:1]
+    )
+    hamiltonian = np.where(valid, hamiltonian, mask_id)
+    angular_momentum = np.where(valid, angular_momentum, mask_id)
+    return hamiltonian.astype(np.float32), angular_momentum.astype(np.float32)
 
 
 def _generate_single_trajectory(task):
@@ -347,12 +389,28 @@ def _generate_single_trajectory(task):
         force_vectors, force_magnitudes = process_multiplanet_fn_of_state(
             fn_of_state_list, num_points, force_magnitude_mask_id, force_vector_mask_id
         )
+        hamiltonian, angular_momentum = compute_two_body_invariants_from_full_state(
+            full_state,
+            mask_id=force_magnitude_mask_id,
+        )
     else:
         state = None
         full_state = None
         force_vectors = None
         force_magnitudes = None
-    return (traj_raw, traj, full_state, state, force_vectors, force_magnitudes, num_bodies)
+        hamiltonian = None
+        angular_momentum = None
+    return (
+        traj_raw,
+        traj,
+        full_state,
+        state,
+        force_vectors,
+        force_magnitudes,
+        hamiltonian,
+        angular_momentum,
+        num_bodies,
+    )
 
 
 def _sample_exoplanet_for_queue(
@@ -429,6 +487,7 @@ def generate_data_parallel(
         full_state_shape = (n_traj, num_points_per_trajectory, full_state_dim)
         force_vector_shape = (n_traj, num_points_per_trajectory, force_vec_dim)
         force_magnitude_shape = (n_traj, num_points_per_trajectory, force_mag_dim)
+        invariant_shape = (n_traj, num_points_per_trajectory, 1)
         force_magnitude_dtype = np.float32
     if num_bins > 0:
         dtype = np.dtype(np.uint16)
@@ -472,6 +531,18 @@ def generate_data_parallel(
             mode="w+",
             dtype=force_magnitude_dtype,
             shape=force_magnitude_shape,
+        )
+        hamiltonian_mm = open_memmap(
+            out_dir / f"hamiltonian_{label}.npy",
+            mode="w+",
+            dtype=np.float32,
+            shape=invariant_shape,
+        )
+        angular_momentum_mm = open_memmap(
+            out_dir / f"angular_momentum_{label}.npy",
+            mode="w+",
+            dtype=np.float32,
+            shape=invariant_shape,
         )
 
     # -------- 3. Build the work queue in parallel ---------------------
@@ -517,7 +588,17 @@ def generate_data_parallel(
     # -------- 4. Worker pool + streamed writes ------------
     if debug:
         for idx, task in enumerate(tqdm.tqdm(tasks, desc=f"[{label}] Debug mode")):
-            traj_raw, traj, full_state, state, force_vectors, force_magnitudes, num_bodies = (
+            (
+                traj_raw,
+                traj,
+                full_state,
+                state,
+                force_vectors,
+                force_magnitudes,
+                hamiltonian,
+                angular_momentum,
+                num_bodies,
+            ) = (
                 _generate_single_trajectory(task)
             )
             obs_mm[idx] = traj.astype(dtype, copy=False)
@@ -527,6 +608,8 @@ def generate_data_parallel(
                 full_state_mm[idx] = full_state.astype(np.float32, copy=False)
                 force_vector_mm[idx] = force_vectors.astype(np.float32, copy=False)
                 force_magnitude_mm[idx] = force_magnitudes.astype(force_magnitude_dtype, copy=False)
+                hamiltonian_mm[idx] = hamiltonian.astype(np.float32, copy=False)
+                angular_momentum_mm[idx] = angular_momentum.astype(np.float32, copy=False)
     else:
         with mp.Pool(processes=num_workers) as pool:
             for idx, (
@@ -536,6 +619,8 @@ def generate_data_parallel(
                 state,
                 force_vectors,
                 force_magnitudes,
+                hamiltonian,
+                angular_momentum,
                 num_bodies,
             ) in enumerate(
                 tqdm.tqdm(
@@ -554,6 +639,10 @@ def generate_data_parallel(
                     force_magnitude_mm[idx] = force_magnitudes.astype(
                         force_magnitude_dtype, copy=False
                     )
+                    hamiltonian_mm[idx] = hamiltonian.astype(np.float32, copy=False)
+                    angular_momentum_mm[idx] = angular_momentum.astype(
+                        np.float32, copy=False
+                    )
     obs_mm.flush()
     del obs_mm
     num_bodies_mm.flush()
@@ -567,6 +656,10 @@ def generate_data_parallel(
         del force_vector_mm
         force_magnitude_mm.flush()
         del force_magnitude_mm
+        hamiltonian_mm.flush()
+        del hamiltonian_mm
+        angular_momentum_mm.flush()
+        del angular_momentum_mm
 
     return cur_seed  # so main() can keep advancing the seed
 
@@ -762,7 +855,9 @@ def main():
             label=label,
             num_bins=args.num_bins,
             dtype=np.float16,  # or np.float16 if you like
-            skip_states='two_body' not in label, # skip states for pretraining. 
+            skip_states=(
+                "two_body" not in label and not args.save_pretraining_forces
+            ),
             force_magnitude_mask_id=force_magnitude_mask_id,
             force_vector_mask_id=force_vector_mask_id,
             debug=args.debug,

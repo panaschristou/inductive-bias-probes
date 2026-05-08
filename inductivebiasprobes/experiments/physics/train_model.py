@@ -27,6 +27,13 @@ def parse_physics_args():
     parser = add_common_args(parser)
     parser.add_argument("--white_noise_dataset_idx_lower", type=int, default=None)
     parser.add_argument("--white_noise_dataset_idx_upper", type=int, default=None)
+    parser.add_argument(
+        "--force_aux_dataset",
+        type=str,
+        default=None,
+        choices=["pretraining", "two_body"],
+        help="Dataset used for force-aware next-token pretraining",
+    )
     return parser.parse_args()
 
 
@@ -36,8 +43,89 @@ def load_config(args):
     assert args.config is not None, "Config file is required"
     with (PHYSICS_CONFIG_DIR / (args.config + ".yaml")).open("r") as f:
         file_config = yaml.load(f, Loader=yaml.FullLoader)
-    file_config.update(config)
+    for key, value in config.items():
+        if value is not None:
+            file_config[key] = value
     return file_config
+
+
+def _require_file(path, config_name):
+    if not path.exists():
+        raise FileNotFoundError(
+            f"{config_name} was set to {path}, but that file does not exist. "
+            "Regenerate data with the needed force/state targets or use "
+            "--force_aux_dataset two_body for the first prototype."
+        )
+
+
+def configure_force_auxiliary_files(config):
+    """Attach force/state target files for force-aware physics pretraining."""
+    if not (
+        config.get("use_force_aux_loss")
+        or config.get("use_force_law_loss")
+        or config.get("use_hamiltonian_aux_loss")
+        or config.get("use_angular_momentum_aux_loss")
+    ):
+        return
+    if config["predict_type"] != "next_token":
+        raise ValueError(
+            "Force auxiliary/law losses are currently wired for next_token "
+            "pretraining. Use transfer configs without these flags."
+        )
+
+    dataset = config.get("force_aux_dataset", "pretraining")
+    if dataset == "two_body":
+        train_label, val_label = "two_body_train", "two_body_val"
+        config["train_file"] = PHYSICS_DATA_DIR / f"obs_{train_label}.npy"
+        config["val_file"] = PHYSICS_DATA_DIR / f"obs_{val_label}.npy"
+        config["test_file"] = PHYSICS_DATA_DIR / "obs_two_body_test.npy"
+        config["force_aux_shift_targets"] = True
+        config["force_law_shift_targets"] = True
+        config["hamiltonian_aux_shift_targets"] = True
+        config["angular_momentum_aux_shift_targets"] = True
+        logger.info("Using two-body data for force-aware next-token pretraining")
+    elif dataset == "pretraining":
+        train_label, val_label = "train", "val"
+        logger.info("Using ordinary pretraining data for force-aware pretraining")
+    else:
+        raise ValueError(f"Unsupported force_aux_dataset: {dataset}")
+
+    if config.get("use_force_aux_loss"):
+        train_force = PHYSICS_DATA_DIR / f"force_vector_{train_label}.npy"
+        val_force = PHYSICS_DATA_DIR / f"force_vector_{val_label}.npy"
+        _require_file(train_force, "train_force_aux_target_file")
+        _require_file(val_force, "val_force_aux_target_file")
+        config["train_force_aux_target_file"] = train_force
+        config["val_force_aux_target_file"] = val_force
+        config.setdefault("force_aux_dim", 2)
+        config.setdefault("force_aux_mask_id", float("inf"))
+
+    if config.get("use_force_law_loss"):
+        train_full_state = PHYSICS_DATA_DIR / f"full_state_{train_label}.npy"
+        val_full_state = PHYSICS_DATA_DIR / f"full_state_{val_label}.npy"
+        _require_file(train_full_state, "train_full_state_file")
+        _require_file(val_full_state, "val_full_state_file")
+        config["train_full_state_file"] = train_full_state
+        config["val_full_state_file"] = val_full_state
+        config.setdefault("force_aux_dim", 2)
+
+    if config.get("use_hamiltonian_aux_loss"):
+        train_hamiltonian = PHYSICS_DATA_DIR / f"hamiltonian_{train_label}.npy"
+        val_hamiltonian = PHYSICS_DATA_DIR / f"hamiltonian_{val_label}.npy"
+        _require_file(train_hamiltonian, "train_hamiltonian_aux_target_file")
+        _require_file(val_hamiltonian, "val_hamiltonian_aux_target_file")
+        config["train_hamiltonian_aux_target_file"] = train_hamiltonian
+        config["val_hamiltonian_aux_target_file"] = val_hamiltonian
+        config.setdefault("hamiltonian_aux_mask_id", float("inf"))
+
+    if config.get("use_angular_momentum_aux_loss"):
+        train_angular = PHYSICS_DATA_DIR / f"angular_momentum_{train_label}.npy"
+        val_angular = PHYSICS_DATA_DIR / f"angular_momentum_{val_label}.npy"
+        _require_file(train_angular, "train_angular_momentum_aux_target_file")
+        _require_file(val_angular, "val_angular_momentum_aux_target_file")
+        config["train_angular_momentum_aux_target_file"] = train_angular
+        config["val_angular_momentum_aux_target_file"] = val_angular
+        config.setdefault("angular_momentum_aux_mask_id", float("inf"))
 
 
 def train_and_save_model(
@@ -126,6 +214,7 @@ def train_and_save_model(
             / f"{config['white_noise_dataset_size']}-examples"
             / f"white_noise_indices_val_{white_noise_dataset_idx}.npy"
         )
+    configure_force_auxiliary_files(config)
 
     # Setup wandb config
     config["wandb_project"] = f"physics-pretrain-{config['predict_type']}"
@@ -201,10 +290,12 @@ def main():
     args = parse_physics_args()
     config = load_config(args)
 
+    save_name = config.get("experiment_name") or config["predict_type"]
+
     # Setup pretrained checkpoint directory. Default is scratch.
     if config["pretrained"] == "scratch":
         pretrained_ckpt_dir = (
-            PHYSICS_CKPT_DIR / config["model_type"] / config["predict_type"]
+            PHYSICS_CKPT_DIR / config["model_type"] / save_name
         )
     else:
         pretrained_ckpt_dir = (
@@ -242,13 +333,16 @@ def main():
         # Setup checkpoint directories
         if config["pretrained"] == "scratch":
             save_ckpt_dir = (
-                PHYSICS_CKPT_DIR / config["model_type"] / config["predict_type"]
+                PHYSICS_CKPT_DIR / config["model_type"] / save_name
             )
         else:
+            transfer_name = config.get("experiment_name")
+            if transfer_name is None:
+                transfer_name = f"{config['pretrained']}_pt_{config['predict_type']}_transfer"
             save_ckpt_dir = (
                 PHYSICS_CKPT_DIR
                 / config["model_type"]
-                / f"{config['pretrained']}_pt_{config['predict_type']}_transfer"
+                / transfer_name
             )
 
         train_and_save_model(
