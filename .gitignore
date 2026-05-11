@@ -32,9 +32,12 @@ scratch/
 # Version files
 **/version.py
 
-outputs/
-**/outputs/
-*.pdf
+# Lightweight experiment outputs are tracked for analysis.
+!inductivebiasprobes/outputs/
+!inductivebiasprobes/outputs/**
+!inductivebiasprobes/outputs/**/*.pdf
+!inductivebiasprobes/outputs/**/*.png
+!inductivebiasprobes/outputs/**/*.jpg
 **/*.db
 **/*.db-shm
 **/*.db-wal
