@@ -1,6 +1,24 @@
 # Physics Experiment Commands
 
-Run these commands from:
+Run these commands from the physics experiment directory, but first put the repo root on `PYTHONPATH`.
+
+On NERSC, from your current checkout:
+
+```bash
+cd /pscratch/sd/b/bleach/inductive-bias-probes
+export PYTHONPATH="$PWD:${PYTHONPATH}"
+cd inductivebiasprobes/experiments/physics
+```
+
+For a different checkout path, replace `/pscratch/sd/b/bleach/inductive-bias-probes` with your repo root.
+
+If you do not set `PYTHONPATH`, commands run from `inductivebiasprobes/experiments/physics` can fail with:
+
+```text
+ModuleNotFoundError: No module named 'inductivebiasprobes'
+```
+
+After that setup, run the experiment commands from:
 
 ```bash
 cd inductivebiasprobes/experiments/physics

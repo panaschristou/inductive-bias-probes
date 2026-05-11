@@ -104,6 +104,16 @@ Those are not central to the 1000-trajectory pilot unless explicitly running ora
 
 ## Data Generation Matrix
 
+On NERSC, set the repo root on `PYTHONPATH` before running scripts from `inductivebiasprobes/experiments/physics`:
+
+```bash
+cd /pscratch/sd/b/bleach/inductive-bias-probes
+export PYTHONPATH="$PWD:${PYTHONPATH}"
+cd inductivebiasprobes/experiments/physics
+```
+
+Without this, Python only sees the experiment script directory and may not be able to import the top-level `inductivebiasprobes` package.
+
 | ID | Scope | Command Type | Required For | Status |
 |---|---|---|---|---|
 | D0 | Existing pilot data | `generate_data.py --num_train_trajectories 1000` | baseline NTP, force aux, force law, force-vector transfer | run if not already present |
