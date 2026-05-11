@@ -1,5 +1,6 @@
 import argparse
 import copy
+import importlib.util
 import json
 import logging
 import math
@@ -277,6 +278,31 @@ def setup_training_environment(config, ckpt_dir, save_checkpoints=True):
     }[new_config["dtype"]]
 
     return ddp, master_process, ptdtype, new_config
+
+
+def should_compile_model(config):
+    """Return whether torch.compile should be used for this training run."""
+    if config["no_compile"]:
+        return False
+    if "mamba" in config["model_type"]:
+        return False
+    if uses_auxiliary_losses(config):
+        return False
+    if str(config["device"]).startswith("cuda"):
+        try:
+            if importlib.util.find_spec("triton") is None:
+                raise ImportError("triton package not found")
+            import triton  # noqa: F401
+        except Exception as exc:
+            logger.warning(
+                "Triton is not available (%s), so torch.compile/Inductor will be "
+                "disabled. Install a working triton package or pass --no_compile "
+                "to silence this warning.",
+                exc,
+            )
+            config["no_compile"] = True
+            return False
+    return True
 
 
 def _json_safe(value):
@@ -795,11 +821,7 @@ def init_model(config, ckpt_dir, ddp):
         optimizer_state = None
     model = model.to(config["device"])
 
-    if (
-        config["no_compile"]
-        or "mamba" in config["model_type"]
-        or uses_auxiliary_losses(config)
-    ):
+    if not should_compile_model(config):
         import torch._dynamo as dynamo
 
         dynamo.config.disable = True

@@ -114,6 +114,12 @@ cd inductivebiasprobes/experiments/physics
 
 Without this, Python only sees the experiment script directory and may not be able to import the top-level `inductivebiasprobes` package.
 
+If the NERSC environment does not have a working Triton install, add `--no_compile` to training commands. Otherwise PyTorch Inductor can fail before the first optimization step with:
+
+```text
+RuntimeError: Cannot find a working triton installation
+```
+
 | ID | Scope | Command Type | Required For | Status |
 |---|---|---|---|---|
 | D0 | Existing pilot data | `generate_data.py --num_train_trajectories 1000` | baseline NTP, force aux, force law, force-vector transfer | run if not already present |
@@ -172,7 +178,7 @@ All runs in this section are 1000-trajectory pilot runs.
 Recommended pilot settings:
 
 ```bash
---max_iters 1000 --eval_interval 100 --eval_iters 1 --batch_size 64 --no_wandb
+--max_iters 1000 --eval_interval 100 --eval_iters 1 --batch_size 64 --no_wandb --no_compile
 ```
 
 Primary metrics to compare:
@@ -204,7 +210,7 @@ These evaluate whether physics-aware pretraining improves downstream sparse forc
 Recommended pilot settings:
 
 ```bash
---config force_vector_config --max_iters 1000 --eval_interval 50 --eval_iters 1 --batch_size 8 --no_wandb
+--config force_vector_config --max_iters 1000 --eval_interval 50 --eval_iters 1 --batch_size 8 --no_wandb --no_compile
 ```
 
 Primary transfer metric:
@@ -230,7 +236,7 @@ Run this after force-vector results if the pretraining effects look promising.
 Use:
 
 ```bash
---config force_magnitude_config --max_iters 1000 --eval_interval 50 --eval_iters 1 --batch_size 64 --no_wandb
+--config force_magnitude_config --max_iters 1000 --eval_interval 50 --eval_iters 1 --batch_size 64 --no_wandb --no_compile
 ```
 
 ## Evaluation And Plotting Matrix

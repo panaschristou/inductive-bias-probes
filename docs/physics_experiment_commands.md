@@ -18,6 +18,20 @@ If you do not set `PYTHONPATH`, commands run from `inductivebiasprobes/experimen
 ModuleNotFoundError: No module named 'inductivebiasprobes'
 ```
 
+NERSC environments may also lack a working Triton install. If you see:
+
+```text
+RuntimeError: Cannot find a working triton installation
+```
+
+rerun the training command with:
+
+```bash
+--no_compile
+```
+
+The current training code also auto-disables `torch.compile` when Triton is missing, but use `--no_compile` explicitly until that patch is on the machine where you are launching jobs.
+
 After that setup, run the experiment commands from:
 
 ```bash
@@ -243,7 +257,8 @@ python train_model.py \
   --eval_interval 100 \
   --eval_iters 1 \
   --batch_size 64 \
-  --no_wandb
+  --no_wandb \
+  --no_compile
 ```
 
 Saves to:
@@ -261,7 +276,8 @@ python train_model.py \
   --eval_interval 100 \
   --eval_iters 1 \
   --batch_size 64 \
-  --no_wandb
+  --no_wandb \
+  --no_compile
 ```
 
 Objective:
@@ -293,7 +309,8 @@ python train_model.py \
   --eval_interval 100 \
   --eval_iters 1 \
   --batch_size 64 \
-  --no_wandb
+  --no_wandb \
+  --no_compile
 ```
 
 Objective:
@@ -328,7 +345,8 @@ python train_model.py \
   --eval_interval 100 \
   --eval_iters 1 \
   --batch_size 64 \
-  --no_wandb
+  --no_wandb \
+  --no_compile
 ```
 
 Objective:
@@ -376,7 +394,8 @@ python train_model.py \
   --eval_interval 100 \
   --eval_iters 1 \
   --batch_size 64 \
-  --no_wandb
+  --no_wandb \
+  --no_compile
 ```
 
 Saves to:
@@ -400,7 +419,8 @@ python train_model.py \
   --eval_interval 50 \
   --eval_iters 1 \
   --batch_size 8 \
-  --no_wandb
+  --no_wandb \
+  --no_compile
 ```
 
 ### Normal Next-Token To Force Vector
@@ -413,7 +433,8 @@ python train_model.py \
   --eval_interval 50 \
   --eval_iters 1 \
   --batch_size 8 \
-  --no_wandb
+  --no_wandb \
+  --no_compile
 ```
 
 ### Force-Auxiliary Pretraining To Force Vector
@@ -426,7 +447,8 @@ python train_model.py \
   --eval_interval 50 \
   --eval_iters 1 \
   --batch_size 8 \
-  --no_wandb
+  --no_wandb \
+  --no_compile
 ```
 
 ### Force-Law Pretraining To Force Vector
@@ -439,7 +461,8 @@ python train_model.py \
   --eval_interval 50 \
   --eval_iters 1 \
   --batch_size 8 \
-  --no_wandb
+  --no_wandb \
+  --no_compile
 ```
 
 ### Hamiltonian/Angular-Momentum Pretraining To Force Vector
@@ -452,7 +475,8 @@ python train_model.py \
   --eval_interval 50 \
   --eval_iters 1 \
   --batch_size 8 \
-  --no_wandb
+  --no_wandb \
+  --no_compile
 ```
 
 ### Multi-Planet Force-Auxiliary Pretraining To Force Vector
@@ -465,7 +489,8 @@ python train_model.py \
   --eval_interval 50 \
   --eval_iters 1 \
   --batch_size 8 \
-  --no_wandb
+  --no_wandb \
+  --no_compile
 ```
 
 ## Optional Force-Magnitude Transfer
@@ -480,7 +505,8 @@ python train_model.py \
   --eval_interval 50 \
   --eval_iters 1 \
   --batch_size 64 \
-  --no_wandb
+  --no_wandb \
+  --no_compile
 ```
 
 ## Force-Vector Plots
