@@ -1,0 +1,15 @@
+{
+  "iter": 499,
+  "epoch": 3,
+  "train_loss_mean": 6.4462456703186035,
+  "val_loss_mean": 6.638062477111816,
+  "learning_rate": 0.0006,
+  "train_task_loss_mean": 6.446020126342773,
+  "train_hamiltonian_aux_loss_mean": 0.00048545844038017094,
+  "train_angular_momentum_aux_loss_mean": 0.0017763038631528616,
+  "train_total_loss_mean": 6.4462456703186035,
+  "val_task_loss_mean": 6.6379289627075195,
+  "val_hamiltonian_aux_loss_mean": 0.00032933129114098847,
+  "val_angular_momentum_aux_loss_mean": 0.0010075323516502976,
+  "val_total_loss_mean": 6.638062477111816
+}

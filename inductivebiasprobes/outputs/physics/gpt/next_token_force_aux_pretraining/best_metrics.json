@@ -1,0 +1,13 @@
+{
+  "iter": 999,
+  "epoch": 7,
+  "train_loss_mean": 7.171109199523926,
+  "val_loss_mean": 7.609198093414307,
+  "learning_rate": 0.0006,
+  "train_task_loss_mean": 7.15797233581543,
+  "train_force_aux_loss_mean": 0.13136787712574005,
+  "train_total_loss_mean": 7.171109199523926,
+  "val_task_loss_mean": 7.593700408935547,
+  "val_force_aux_loss_mean": 0.1549738198518753,
+  "val_total_loss_mean": 7.609198093414307
+}
