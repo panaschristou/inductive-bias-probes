@@ -35,6 +35,15 @@ def parse_physics_args():
         choices=["pretraining", "two_body"],
         help="Dataset used for force-aware next-token pretraining",
     )
+    parser.add_argument(
+        "--force_vector_mask_variant",
+        type=str,
+        default=None,
+        help=(
+            "Mask variant for force-vector transfer targets. If set, train_model "
+            "loads force_vector_solar_system_two_body_masked_{variant}.npy."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -172,12 +181,20 @@ def train_and_save_model(
             print("NOTE: USING MASKED SOLAR SYSTEM DATA")
             config['train_file'] = PHYSICS_DATA_DIR / f"obs_solar_system_two_body.npy"
             config['val_file'] = PHYSICS_DATA_DIR / f"obs_solar_system_two_body.npy"
+            mask_variant = config.get("force_vector_mask_variant")
+            masked_force_name = (
+                f"force_vector_solar_system_two_body_masked_{mask_variant}.npy"
+                if mask_variant
+                else "force_vector_solar_system_two_body_masked.npy"
+            )
             config["train_target_file"] = (
-                PHYSICS_DATA_DIR / f"force_vector_solar_system_two_body_masked.npy"
+                PHYSICS_DATA_DIR / masked_force_name
             )
             config["val_target_file"] = (
                 PHYSICS_DATA_DIR / f"force_vector_solar_system_two_body.npy"
             )
+            _require_file(config["train_target_file"], "train_target_file")
+            _require_file(config["val_target_file"], "val_target_file")
     elif config["predict_type"] == "white_noise":
         config["train_file"] = (
             PHYSICS_DATA_DIR
