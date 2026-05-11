@@ -32,6 +32,14 @@ rerun the training command with:
 
 The current training code also auto-disables `torch.compile` when Triton is missing, but use `--no_compile` explicitly until that patch is on the machine where you are launching jobs.
 
+For the next-token pretraining configs, avoid `--batch_size 64` on 40 GB GPUs. The logits have shape roughly:
+
+```text
+batch_size x block_size x output_dim x output_vocab_size
+```
+
+With the physics defaults this is `batch_size x 999 x 2 x 7003`, so `batch_size 64` can run out of memory. Start with `--batch_size 8 --dtype bfloat16`; if that still OOMs, use `--batch_size 4`.
+
 After that setup, run the experiment commands from:
 
 ```bash
@@ -256,7 +264,8 @@ python train_model.py \
   --max_iters 1000 \
   --eval_interval 100 \
   --eval_iters 1 \
-  --batch_size 64 \
+  --batch_size 8 \
+  --dtype bfloat16 \
   --no_wandb \
   --no_compile
 ```
@@ -275,7 +284,8 @@ python train_model.py \
   --max_iters 1000 \
   --eval_interval 100 \
   --eval_iters 1 \
-  --batch_size 64 \
+  --batch_size 8 \
+  --dtype bfloat16 \
   --no_wandb \
   --no_compile
 ```
@@ -308,7 +318,8 @@ python train_model.py \
   --max_iters 1000 \
   --eval_interval 100 \
   --eval_iters 1 \
-  --batch_size 64 \
+  --batch_size 8 \
+  --dtype bfloat16 \
   --no_wandb \
   --no_compile
 ```
@@ -344,7 +355,8 @@ python train_model.py \
   --max_iters 1000 \
   --eval_interval 100 \
   --eval_iters 1 \
-  --batch_size 64 \
+  --batch_size 8 \
+  --dtype bfloat16 \
   --no_wandb \
   --no_compile
 ```
@@ -393,7 +405,8 @@ python train_model.py \
   --max_iters 1000 \
   --eval_interval 100 \
   --eval_iters 1 \
-  --batch_size 64 \
+  --batch_size 8 \
+  --dtype bfloat16 \
   --no_wandb \
   --no_compile
 ```

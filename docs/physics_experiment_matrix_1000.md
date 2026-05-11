@@ -120,6 +120,12 @@ If the NERSC environment does not have a working Triton install, add `--no_compi
 RuntimeError: Cannot find a working triton installation
 ```
 
+For next-token pretraining on 40 GB GPUs, start with `--batch_size 8 --dtype bfloat16`. A `batch_size` of 64 can OOM because the next-token logits are roughly:
+
+```text
+batch_size x 999 x 2 x 7003
+```
+
 | ID | Scope | Command Type | Required For | Status |
 |---|---|---|---|---|
 | D0 | Existing pilot data | `generate_data.py --num_train_trajectories 1000` | baseline NTP, force aux, force law, force-vector transfer | run if not already present |
@@ -178,7 +184,7 @@ All runs in this section are 1000-trajectory pilot runs.
 Recommended pilot settings:
 
 ```bash
---max_iters 1000 --eval_interval 100 --eval_iters 1 --batch_size 64 --no_wandb --no_compile
+--max_iters 1000 --eval_interval 100 --eval_iters 1 --batch_size 8 --dtype bfloat16 --no_wandb --no_compile
 ```
 
 Primary metrics to compare:
