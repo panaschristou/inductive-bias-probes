@@ -8,6 +8,7 @@ from inductivebiasprobes.paths import (
     PHYSICS_CKPT_DIR,
     PHYSICS_DATA_DIR,
     PHYSICS_EXT_DIR,
+    PHYSICS_OUTPUT_DIR,
 )
 from inductivebiasprobes.src.train_utils import (
     add_common_args,
@@ -224,6 +225,14 @@ def train_and_save_model(
         config["wandb_run_name"] = run_name or "gpt"
     if config["predict_type"] == "white_noise":
         config["no_wandb"] = True
+    if config.get("output_dir") is not None:
+        config["run_output_dir"] = config["output_dir"]
+    else:
+        config["run_output_dir"] = (
+            PHYSICS_OUTPUT_DIR
+            / config["model_type"]
+            / save_ckpt_dir.name
+        )
 
     # Set target callback
     target_callback = None

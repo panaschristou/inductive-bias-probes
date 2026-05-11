@@ -28,3 +28,9 @@ EXT_DIR = BASE_DIR / "extrapolations"
 PHYSICS_EXT_DIR = EXT_DIR / "physics"
 GRIDWORLD_EXT_DIR = EXT_DIR / "gridworld"
 OTHELLO_EXT_DIR = EXT_DIR / "othello"
+
+# Lightweight run-output directories
+OUTPUT_DIR = BASE_DIR / "outputs"
+PHYSICS_OUTPUT_DIR = OUTPUT_DIR / "physics"
+GRIDWORLD_OUTPUT_DIR = OUTPUT_DIR / "gridworld"
+OTHELLO_OUTPUT_DIR = OUTPUT_DIR / "othello"

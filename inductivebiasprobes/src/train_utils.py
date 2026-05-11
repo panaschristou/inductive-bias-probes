@@ -7,6 +7,7 @@ import os
 import time
 import warnings
 from contextlib import nullcontext
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -225,6 +226,16 @@ def add_common_args(parser):
     parser.add_argument("--wandb_run_name", default="default", help="wandb run name")
     parser.add_argument("--wandb_entity", default="entity", help="wandb entity name")
     parser.add_argument(
+        "--output_dir",
+        default=None,
+        help="Optional directory for lightweight run summaries and metric history",
+    )
+    parser.add_argument(
+        "--no_output_summary",
+        action="store_true",
+        help="Disable lightweight JSON/NPY run summaries",
+    )
+    parser.add_argument(
         "--no_compile", action="store_true", help="Don't compile the model"
     )
     parser.add_argument("--save_loss", action="store_true")
@@ -266,6 +277,31 @@ def setup_training_environment(config, ckpt_dir, save_checkpoints=True):
     }[new_config["dtype"]]
 
     return ddp, master_process, ptdtype, new_config
+
+
+def _json_safe(value):
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, np.generic):
+        return value.item()
+    if isinstance(value, torch.Tensor):
+        if value.numel() == 1:
+            return value.detach().cpu().item()
+        return value.detach().cpu().tolist()
+    if isinstance(value, dict):
+        return {str(k): _json_safe(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(v) for v in value]
+    return value
+
+
+def write_run_output(output_dir, filename, payload):
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    with (output_dir / filename).open("w") as f:
+        json.dump(_json_safe(payload), f, indent=2)
 
 
 def get_sequential_batch(
@@ -838,6 +874,14 @@ def train(
     t0 = time.time()
     raw_model = model.module if ddp else model
     running_mfu = -1.0
+    run_output_dir = config.get("run_output_dir")
+    write_outputs = bool(run_output_dir) and not config.get("no_output_summary", False)
+    metrics_history = []
+    best_record = None
+    if write_outputs and master_process:
+        run_output_dir = Path(run_output_dir)
+        run_output_dir.mkdir(parents=True, exist_ok=True)
+        write_run_output(run_output_dir, "config.json", config)
 
     # Calculate iterations per epoch
     dataset_size = config["num_data_points"]
@@ -881,12 +925,30 @@ def train(
             if loss_callback is not None and loss_callback_name is not None:
                 callback_losses = estimate_loss(model, config, loss_callback)
             train_loss, val_loss = losses["train"].mean(), losses["val"].mean()
+            eval_record = {
+                "iter": int(iter_num),
+                "epoch": int(current_epoch),
+                "train_loss_mean": float(train_loss),
+                "val_loss_mean": float(val_loss),
+                "learning_rate": float(lr),
+            }
+            for key, value in losses.items():
+                if key.startswith(("train_", "val_")):
+                    eval_record[f"{key}_mean"] = float(np.nanmean(value))
+            metrics_history.append(eval_record)
+            if write_outputs:
+                write_run_output(
+                    run_output_dir,
+                    "metrics_history.json",
+                    metrics_history,
+                )
 
             if config["plot_trajectory"]:
                 evaluate_trajectory_prediction(model, config, iter_num)
 
             if val_loss < best_val_loss or config["always_save_checkpoint"]:
                 best_val_loss = val_loss
+                best_record = eval_record
                 if iter_num > 0 and save_checkpoints:
                     checkpoint = {
                         "model": raw_model.state_dict(),
@@ -901,11 +963,18 @@ def train(
                     # Save best_val_loss
 
                     np.save(ckpt_dir / "best_val_loss.npy", np.array(losses["val"]))
+                    if write_outputs:
+                        np.save(
+                            run_output_dir / "best_val_loss.npy",
+                            np.array(losses["val"]),
+                        )
                     if loss_callback is not None and loss_callback_name is not None:
                         np.save(
                             ckpt_dir / f"best_val_{loss_callback_name}.npy",
                             np.array(callback_losses["val"]),
                         )
+                if write_outputs:
+                    write_run_output(run_output_dir, "best_metrics.json", best_record)
             # if iter_num == config["max_iters"] - 1 and save_checkpoints:
             if save_checkpoints:
                 # Save each checkpoint
@@ -1001,6 +1070,22 @@ def train(
         callback_dir.mkdir(parents=True, exist_ok=True)
         with open(callback_dir / "callback_results.json", "w") as f:
             json.dump(callback_results, f, indent=4)
+
+    if write_outputs and master_process:
+        summary = {
+            "run_name": config.get("wandb_run_name"),
+            "model_type": config.get("model_type"),
+            "predict_type": config.get("predict_type"),
+            "pretrained": config.get("pretrained"),
+            "experiment_name": config.get("experiment_name"),
+            "ckpt_dir": str(ckpt_dir),
+            "run_output_dir": str(run_output_dir),
+            "max_iters": config.get("max_iters"),
+            "eval_interval": config.get("eval_interval"),
+            "best_record": best_record,
+            "last_record": metrics_history[-1] if metrics_history else None,
+        }
+        write_run_output(run_output_dir, "training_summary.json", summary)
 
     if ddp:
         destroy_process_group()

@@ -33,4 +33,5 @@ scratch/
 **/version.py
 
 outputs/
+**/outputs/
 *.pdf

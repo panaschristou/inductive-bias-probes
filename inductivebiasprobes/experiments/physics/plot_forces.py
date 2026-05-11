@@ -1,12 +1,19 @@
+import argparse
+import json
 import logging
+import shutil
 from pathlib import Path
 
 import numpy as np
 import torch
-import os
 import yaml
 from inductivebiasprobes import ModelConfig, Model
-from inductivebiasprobes.paths import PHYSICS_DATA_DIR, PHYSICS_CONFIG_DIR
+from inductivebiasprobes.paths import (
+    PHYSICS_CKPT_DIR,
+    PHYSICS_CONFIG_DIR,
+    PHYSICS_DATA_DIR,
+    PHYSICS_OUTPUT_DIR,
+)
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.spatial import distance
@@ -25,45 +32,67 @@ PLANET_NAMES = ["Mercury", "Venus", "Earth", "Mars",
 PLANET_COLORS = ["#B1B1B1", "#F5C16C", "#4EA3FF", "#C1440E",
                  "#F1E4B3", "#D8C17A", "#7FFFD4", "#4256FF"]
 
-def load_model(checkpoint):
-    base_dir = Path(__file__).resolve().parent.parent.parent
-    ckpt_path = base_dir / "checkpoints" / "physics" / "gpt" / checkpoint / "ckpt.pt"
-    checkpoint = torch.load(ckpt_path, map_location="cuda")
+def parse_args():
+    parser = argparse.ArgumentParser(description="Plot force-vector transfer predictions.")
+    parser.add_argument("--model_type", type=str, default="gpt")
+    parser.add_argument(
+        "--experiment_name",
+        "--checkpoint",
+        dest="experiment_name",
+        type=str,
+        default="next_token_pt_force_vector_transfer",
+        help="Run/checkpoint directory name under checkpoints/physics/{model_type}.",
+    )
+    parser.add_argument(
+        "--checkpoint_path",
+        type=Path,
+        default=None,
+        help="Optional direct path to ckpt.pt or last_ckpt.pt.",
+    )
+    parser.add_argument("--device", type=str, default=None)
+    parser.add_argument(
+        "--output_dir",
+        type=Path,
+        default=None,
+        help="Syncable plot output directory. Defaults to outputs/physics/{model_type}/{experiment_name}/figs.",
+    )
+    parser.add_argument(
+        "--fig_dir",
+        type=Path,
+        default=None,
+        help="Local convenience plot directory. Defaults to ./figs/{experiment_name}.",
+    )
+    parser.add_argument("--skip_animation", action="store_true")
+    parser.add_argument("--animation_planet_idx", type=int, default=2, choices=range(len(PLANET_NAMES)))
+    return parser.parse_args()
+
+
+def resolve_checkpoint_path(experiment_name, model_type, checkpoint_path=None):
+    if checkpoint_path is not None:
+        return checkpoint_path
+
+    run_dir = PHYSICS_CKPT_DIR / model_type / experiment_name
+    ckpt_path = run_dir / "ckpt.pt"
+    if ckpt_path.exists():
+        return ckpt_path
+
+    last_ckpt_path = run_dir / "last_ckpt.pt"
+    if last_ckpt_path.exists():
+        return last_ckpt_path
+
+    raise FileNotFoundError(
+        f"No checkpoint found for {experiment_name!r}. Expected {ckpt_path} or {last_ckpt_path}."
+    )
+
+
+def load_model(experiment_name, model_type="gpt", device=None, checkpoint_path=None):
+    device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+    ckpt_path = resolve_checkpoint_path(experiment_name, model_type, checkpoint_path)
+    checkpoint = torch.load(ckpt_path, map_location=device)
     checkpoint_model_args = checkpoint["model_args"]
 
-    fixed_configs = {
-        "model_type",
-        "n_embd",
-        "n_layer",
-        "bias",
-        "input_dim",
-        "block_size",
-        "input_vocab_size",
-        "n_head",
-        "dropout",
-        "dt_rank",
-        "d_state",
-        "expand_factor",
-        "d_conv",
-        "dt_min",
-        "dt_max",
-        "dt_init",
-        "dt_scale",
-        "dt_init_floor",
-        "rms_norm_eps",
-        "conv_bias",
-        "inner_layernorms",
-    }
-    mutable_configs = {
-        "output_dim",
-        "mask_id",
-        "output_vocab_size",
-        "pscan",
-        "use_cuda",
-    }
-    all_configs = fixed_configs | mutable_configs
     load_model_args = {}
-    for k in all_configs:
+    for k in ModelConfig.__dataclass_fields__:
         if k in checkpoint_model_args:
             load_model_args[k] = checkpoint_model_args[k]
 
@@ -75,9 +104,27 @@ def load_model(checkpoint):
     for k, v in list(state_dict.items()):
         if k.startswith(unwanted_prefix):
             state_dict[k[len(unwanted_prefix) :]] = state_dict.pop(k)
-    model.load_state_dict(state_dict)
+    incompatible = model.load_state_dict(state_dict, strict=False)
+    if incompatible.missing_keys:
+        logger.warning("Missing keys while loading %s: %s", ckpt_path, incompatible.missing_keys)
+    if incompatible.unexpected_keys:
+        logger.warning("Unexpected keys while loading %s: %s", ckpt_path, incompatible.unexpected_keys)
     model.config = model_config
-    return model
+    model.to(device)
+    logger.info("Loaded checkpoint from %s on %s", ckpt_path, device)
+    return model, ckpt_path
+
+
+def unique_paths(paths):
+    seen = set()
+    unique = []
+    for path in paths:
+        path = Path(path)
+        key = path.resolve()
+        if key not in seen:
+            seen.add(key)
+            unique.append(path)
+    return unique
 
 
 def undiscretize_data(data, num_bins, min_value, max_value):
@@ -234,7 +281,7 @@ def setup_common(ax, planet_idx, title_suffix, arrow_u, arrow_v,
         txt.set_color("black")
 
 
-def make_force_pictures(all_preds, all_truth, all_obs):
+def make_force_pictures(all_preds, all_truth, all_obs, output_dirs):
     force_scale = 18 
     plt.style.use("dark_background")
     plt.rcParams.update({
@@ -309,11 +356,16 @@ def make_force_pictures(all_preds, all_truth, all_obs):
                      color="black",
                      fontsize=50, ha="center", va="bottom")  # Titles for non earth planets
 
-        os.makedirs("figs", exist_ok=True)
-        fig_dir = "figs"
-        out_path = os.path.join(fig_dir, f"force_{PLANET_NAMES[planet_idx].lower()}.pdf")
+        for output_dir in output_dirs:
+            output_dir.mkdir(parents=True, exist_ok=True)
+        out_paths = [
+            output_dir / f"force_{PLANET_NAMES[planet_idx].lower()}.pdf"
+            for output_dir in output_dirs
+        ]
         plt.tight_layout()
-        plt.savefig(out_path, dpi=300, bbox_inches="tight")
+        plt.savefig(out_paths[0], dpi=300, bbox_inches="tight")
+        for out_path in out_paths[1:]:
+            shutil.copy2(out_paths[0], out_path)
         plt.close(fig)
 
 
@@ -331,13 +383,14 @@ def add_arrow(ax, x, y, u, v, scale, color, alpha=1.0):
     )
 
 
-def make_force_animation(all_preds, all_truth, all_obs, planet_idx=2):
+def make_force_animation(all_preds, all_truth, all_obs, output_dirs, planet_idx=2):
     # Reset rcparams to default
     plt.rcParams.update(plt.rcParamsDefault)
     
     force_scale = 18
-    save_dir = "figs"
     gif_name    = f"forces_{PLANET_NAMES[planet_idx].lower()}.gif"
+    for output_dir in output_dirs:
+        output_dir.mkdir(parents=True, exist_ok=True)
 
     plt.style.use("dark_background")
     plt.rcParams.update({
@@ -499,14 +552,30 @@ def make_force_animation(all_preds, all_truth, all_obs, planet_idx=2):
                          blit=False)
 
     # ——— Save GIF to disk ———
-    anim.save(os.path.join(save_dir, gif_name), writer=PillowWriter(fps=12), dpi=75) 
-    print(f"Saved GIF at {os.path.join(save_dir, gif_name)}")
+    out_paths = [output_dir / gif_name for output_dir in output_dirs]
+    anim.save(out_paths[0], writer=PillowWriter(fps=12), dpi=75)
+    for out_path in out_paths[1:]:
+        shutil.copy2(out_paths[0], out_path)
+    plt.close(fig)
+    logger.info("Saved GIF at %s", out_paths[0])
 
 
 def main():
-    checkpoint = "next_token_pt_force_vector_transfer"
-    model = load_model(checkpoint)
+    args = parse_args()
+    device = args.device or ("cuda" if torch.cuda.is_available() else "cpu")
+    model, ckpt_path = load_model(
+        args.experiment_name,
+        model_type=args.model_type,
+        device=device,
+        checkpoint_path=args.checkpoint_path,
+    )
     model.eval()
+
+    local_fig_dir = args.fig_dir or (Path("figs") / args.experiment_name)
+    sync_fig_dir = args.output_dir or (
+        PHYSICS_OUTPUT_DIR / args.model_type / args.experiment_name / "figs"
+    )
+    output_dirs = unique_paths([sync_fig_dir, local_fig_dir])
 
     with (PHYSICS_CONFIG_DIR / ("force_vector_config.yaml")).open("r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
@@ -519,7 +588,7 @@ def main():
     all_truth = []
     all_obs = []
     for planet_idx in range(obs.shape[0]):
-        x = torch.from_numpy(obs[planet_idx]).long().unsqueeze(0)[:, :-1, :]
+        x = torch.from_numpy(obs[planet_idx]).long().unsqueeze(0)[:, :-1, :].to(device)
         with torch.no_grad():
             all_logits = model(x)
             x_real, y_real = all_logits[0, :, 0], all_logits[0, :, 1]
@@ -536,9 +605,35 @@ def main():
         all_obs.append(planet_obs)
 
     # First make the pictures used in Figure 1. 
-    make_force_pictures(all_preds, all_truth, all_obs)
+    make_force_pictures(all_preds, all_truth, all_obs, output_dirs)
     # Also make the force animation. 
-    make_force_animation(all_preds, all_truth, all_obs)
+    if not args.skip_animation:
+        make_force_animation(
+            all_preds,
+            all_truth,
+            all_obs,
+            output_dirs,
+            planet_idx=args.animation_planet_idx,
+        )
+
+    summary = {
+        "experiment_name": args.experiment_name,
+        "model_type": args.model_type,
+        "checkpoint_path": str(ckpt_path),
+        "device": device,
+        "output_dirs": [str(path) for path in output_dirs],
+        "force_pdfs": [
+            f"force_{planet_name.lower()}.pdf" for planet_name in PLANET_NAMES
+        ],
+        "animation_gif": None
+        if args.skip_animation
+        else f"forces_{PLANET_NAMES[args.animation_planet_idx].lower()}.gif",
+    }
+    for output_dir in output_dirs:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        with (output_dir / "plot_summary.json").open("w") as f:
+            json.dump(summary, f, indent=2)
+    logger.info("Saved force plots to %s", ", ".join(str(path) for path in output_dirs))
 
 
 if __name__ == "__main__":

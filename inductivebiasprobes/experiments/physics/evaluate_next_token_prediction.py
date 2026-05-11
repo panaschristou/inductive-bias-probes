@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 from pathlib import Path
 from typing import Any, Dict, Sequence
@@ -10,6 +11,7 @@ import tqdm
 from inductivebiasprobes.paths import (
     PHYSICS_CKPT_DIR,
     PHYSICS_DATA_DIR,
+    PHYSICS_OUTPUT_DIR,
 )
 from inductivebiasprobes import Model, ModelConfig
 
@@ -31,6 +33,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--predict_type", type=str, default="next_token")
     parser.add_argument(
+        "--experiment_name",
+        type=str,
+        default=None,
+        help="Checkpoint/run directory to evaluate. Defaults to --predict_type.",
+    )
+    parser.add_argument(
         "--prefix_points",
         type=int,
         default=500,
@@ -48,7 +56,25 @@ def parse_args() -> argparse.Namespace:
         type=str,
         default="cuda" if torch.cuda.is_available() else "cpu",
     )
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default=None,
+        help="Optional lightweight evaluation output directory",
+    )
     return parser.parse_args()
+
+
+def _json_safe(value):
+    if isinstance(value, dict):
+        return {str(k): _json_safe(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(v) for v in value]
+    if isinstance(value, np.generic):
+        return value.item()
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    return value
 
 
 def load_checkpoint(
@@ -344,7 +370,8 @@ def main():
     device = torch.device(args.device)
 
     # Load checkpoint
-    ckpt_dir = PHYSICS_CKPT_DIR / args.model_type / args.predict_type
+    run_name = args.experiment_name or args.predict_type
+    ckpt_dir = PHYSICS_CKPT_DIR / args.model_type / run_name
     ckpt_path = ckpt_dir / "ckpt.pt"
     if not ckpt_path.exists():
         ckpt_path = ckpt_dir / "last_ckpt.pt"
@@ -408,7 +435,7 @@ def main():
             logger.info(f"{k} h={h}: {v[h]['mse']:.5e} ± {v[h]['se']:.5e}")
 
     # Save
-    out_dir = PHYSICS_CKPT_DIR / args.model_type / args.predict_type / "evaluation"
+    out_dir = PHYSICS_CKPT_DIR / args.model_type / run_name / "evaluation"
     out_dir.mkdir(parents=True, exist_ok=True)
     np.savez(
         out_dir / "teacher_forcing_metrics.npz",
@@ -418,7 +445,36 @@ def main():
         out_dir / f"autoregressive_metrics_prefix_{args.prefix_points}.npz",
         **ar_metrics,
     )
+    summary_dir = (
+        Path(args.output_dir)
+        if args.output_dir is not None
+        else PHYSICS_OUTPUT_DIR / args.model_type / run_name / "evaluation"
+    )
+    summary_dir.mkdir(parents=True, exist_ok=True)
+    with (summary_dir / "evaluation_summary.json").open("w") as f:
+        json.dump(
+            _json_safe(
+                {
+                    "model_type": args.model_type,
+                    "run_name": run_name,
+                    "ckpt_dir": str(ckpt_dir),
+                    "checkpoint": str(ckpt_path),
+                    "prefix_points": args.prefix_points,
+                    "horizons": args.horizons,
+                    "teacher_forcing": tf_metrics,
+                    "autoregressive": ar_metrics,
+                }
+            ),
+            f,
+            indent=2,
+        )
+    np.savez(summary_dir / "teacher_forcing_metrics.npz", **tf_metrics)
+    np.savez(
+        summary_dir / f"autoregressive_metrics_prefix_{args.prefix_points}.npz",
+        **ar_metrics,
+    )
     logger.info(f"Saved metrics to {out_dir}")
+    logger.info(f"Saved lightweight evaluation summary to {summary_dir}")
 
 
 if __name__ == "__main__":
