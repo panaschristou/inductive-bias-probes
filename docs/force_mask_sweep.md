@@ -54,6 +54,24 @@ inductivebiasprobes/outputs/physics/gpt/force_mask_sweep/sweep_summary.json
 inductivebiasprobes/outputs/physics/gpt/force_mask_sweep/sweep_summary.csv
 ```
 
+7. Compute physics-structure metrics for each transfer run:
+
+```text
+direction cosine with the true force vector
+radial alignment toward the Sun
+central-force torque error
+inverse-square consistency
+magnitude error
+```
+
+Each run gets:
+
+```text
+inductivebiasprobes/outputs/physics/gpt/{run_name}/physics_metrics/summary.json
+inductivebiasprobes/outputs/physics/gpt/{run_name}/physics_metrics/by_planet.json
+inductivebiasprobes/outputs/physics/gpt/{run_name}/physics_metrics/by_planet.csv
+```
+
 Each transfer run also writes its normal output directory:
 
 ```text
@@ -85,10 +103,29 @@ python run_force_mask_sweep.py \
   --skip_existing
 ```
 
+If the training and plots already exist, rerun the same command with `--skip_existing`. The script will skip completed training and existing plots, then add missing physics metrics and refresh:
+
+```text
+force_mask_sweep/sweep_summary.json
+force_mask_sweep/sweep_summary.csv
+```
+
 If GIF generation is slow, add:
 
 ```bash
 --skip_animation
+```
+
+If you want to skip plot generation but still compute physics metrics, add:
+
+```bash
+--skip_plots
+```
+
+If you want to skip the physics metrics, add:
+
+```bash
+--skip_physics_metrics
 ```
 
 If you only want to create the mask files and manifest:

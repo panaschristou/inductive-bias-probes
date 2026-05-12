@@ -86,6 +86,11 @@ def parse_args():
         help="Do not run plot_forces.py after each completed transfer.",
     )
     parser.add_argument(
+        "--skip_physics_metrics",
+        action="store_true",
+        help="Do not run evaluate_force_physics_metrics.py after each completed transfer.",
+    )
+    parser.add_argument(
         "--skip_animation",
         action="store_true",
         help="Pass --skip_animation to plot_forces.py.",
@@ -208,6 +213,7 @@ def collect_sweep_summary(args, sweep_output_dir):
             best_path = run_output_dir / "best_metrics.json"
             history_path = run_output_dir / "metrics_history.json"
             plot_summary_path = run_output_dir / "figs" / "plot_summary.json"
+            physics_metrics_path = run_output_dir / "physics_metrics" / "summary.json"
 
             row = {
                 "mask_variant": variant_suffix,
@@ -217,6 +223,7 @@ def collect_sweep_summary(args, sweep_output_dir):
                 "has_best_metrics": best_path.exists(),
                 "has_metrics_history": history_path.exists(),
                 "has_plots": plot_summary_path.exists(),
+                "has_physics_metrics": physics_metrics_path.exists(),
             }
             if best_path.exists():
                 best = json.loads(best_path.read_text())
@@ -238,6 +245,31 @@ def collect_sweep_summary(args, sweep_output_dir):
                             "final_train_loss": final.get("train_loss_mean"),
                         }
                     )
+            if physics_metrics_path.exists():
+                physics_metrics = json.loads(physics_metrics_path.read_text())
+                row.update(
+                    {
+                        "physics_component_mse": physics_metrics.get("component_mse"),
+                        "physics_vector_mse": physics_metrics.get("vector_mse"),
+                        "direction_cosine_mean": physics_metrics.get(
+                            "direction_cosine_mean"
+                        ),
+                        "direction_positive_fraction": physics_metrics.get(
+                            "direction_positive_fraction"
+                        ),
+                        "radial_alignment_mean": physics_metrics.get(
+                            "radial_alignment_mean"
+                        ),
+                        "inward_fraction": physics_metrics.get("inward_fraction"),
+                        "normalized_torque_abs_mean": physics_metrics.get(
+                            "normalized_torque_abs_mean"
+                        ),
+                        "relative_magnitude_error_mean": physics_metrics.get(
+                            "relative_magnitude_error_mean"
+                        ),
+                        "inverse_square_cv": physics_metrics.get("inverse_square_cv"),
+                    }
+                )
             rows.append(row)
 
     summary = {
@@ -264,6 +296,16 @@ def collect_sweep_summary(args, sweep_output_dir):
         "has_best_metrics",
         "has_metrics_history",
         "has_plots",
+        "has_physics_metrics",
+        "physics_component_mse",
+        "physics_vector_mse",
+        "direction_cosine_mean",
+        "direction_positive_fraction",
+        "radial_alignment_mean",
+        "inward_fraction",
+        "normalized_torque_abs_mean",
+        "relative_magnitude_error_mean",
+        "inverse_square_cv",
         "output_dir",
     ]
     with csv_path.open("w", newline="") as f:
@@ -372,6 +414,7 @@ def main():
                     raise SystemExit(rc)
 
             if not args.skip_plots:
+                plot_summary_path = run_output_dir / "figs" / "plot_summary.json"
                 plot_cmd = [
                     sys.executable,
                     str(script_dir / "plot_forces.py"),
@@ -383,7 +426,10 @@ def main():
                 if args.skip_animation:
                     plot_cmd.append("--skip_animation")
                 run_record["plot_command"] = plot_cmd
-                if args.dry_run:
+                if args.skip_existing and plot_summary_path.exists():
+                    run_record["plot_status"] = "existing_plot_summary"
+                    logger.info("Skipping existing plots for %s", run_name)
+                elif args.dry_run:
                     run_command(plot_cmd, dry_run=True)
                     run_record["plot_status"] = "dry_run"
                 else:
@@ -396,6 +442,38 @@ def main():
                         raise SystemExit(rc)
             else:
                 run_record["plot_status"] = "skipped"
+
+            if not args.skip_physics_metrics:
+                physics_metrics_path = run_output_dir / "physics_metrics" / "summary.json"
+                metrics_cmd = [
+                    sys.executable,
+                    str(script_dir / "evaluate_force_physics_metrics.py"),
+                    "--model_type",
+                    args.model_type,
+                    "--experiment_name",
+                    run_name,
+                    "--device",
+                    args.device,
+                ]
+                run_record["physics_metrics_command"] = metrics_cmd
+                if args.skip_existing and physics_metrics_path.exists():
+                    run_record["physics_metrics_status"] = "existing_summary"
+                    logger.info("Skipping existing physics metrics for %s", run_name)
+                elif args.dry_run:
+                    run_command(metrics_cmd, dry_run=True)
+                    run_record["physics_metrics_status"] = "dry_run"
+                else:
+                    rc = run_command(metrics_cmd)
+                    run_record["physics_metrics_returncode"] = rc
+                    run_record["physics_metrics_status"] = (
+                        "evaluated" if rc == 0 else "failed"
+                    )
+                    if rc != 0:
+                        manifest["runs"].append(run_record)
+                        write_manifest(manifest_path, manifest)
+                        raise SystemExit(rc)
+            else:
+                run_record["physics_metrics_status"] = "skipped"
 
             manifest["runs"].append(run_record)
             write_manifest(manifest_path, manifest)
