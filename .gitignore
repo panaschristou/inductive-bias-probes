@@ -50,3 +50,6 @@ scratch/
 **/*.db
 **/*.db-shm
 **/*.db-wal
+._dbindex_/.lock
+._dbindex_/index_level
+._dbindex_/last_scan

@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-05-11T23:23:02.546239+00:00",
+  "created_at": "2026-05-12T02:07:17.512297+00:00",
   "mask_variants": [
     "10",
     "25",
@@ -28,7 +28,7 @@
       "mask_variant": "10",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_10.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/force_vector_scratch_mask_10",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -57,7 +57,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -66,8 +65,19 @@
         "--experiment_name",
         "force_vector_scratch_mask_10"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "force_vector_scratch_mask_10",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "next_token_pt_force_vector_transfer_mask_10",
@@ -75,7 +85,7 @@
       "mask_variant": "10",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_10.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_pt_force_vector_transfer_mask_10",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -104,7 +114,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -113,8 +122,19 @@
         "--experiment_name",
         "next_token_pt_force_vector_transfer_mask_10"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "next_token_pt_force_vector_transfer_mask_10",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "next_token_force_law_pt_force_vector_transfer_mask_10",
@@ -122,7 +142,7 @@
       "mask_variant": "10",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_10.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_force_law_pt_force_vector_transfer_mask_10",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -151,7 +171,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -160,8 +179,19 @@
         "--experiment_name",
         "next_token_force_law_pt_force_vector_transfer_mask_10"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "next_token_force_law_pt_force_vector_transfer_mask_10",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "next_token_force_aux_pt_force_vector_transfer_mask_10",
@@ -169,7 +199,7 @@
       "mask_variant": "10",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_10.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_force_aux_pt_force_vector_transfer_mask_10",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -198,7 +228,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -207,8 +236,19 @@
         "--experiment_name",
         "next_token_force_aux_pt_force_vector_transfer_mask_10"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "next_token_force_aux_pt_force_vector_transfer_mask_10",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "force_vector_scratch_mask_25",
@@ -216,7 +256,7 @@
       "mask_variant": "25",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_25.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/force_vector_scratch_mask_25",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -245,7 +285,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -254,8 +293,19 @@
         "--experiment_name",
         "force_vector_scratch_mask_25"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "force_vector_scratch_mask_25",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "next_token_pt_force_vector_transfer_mask_25",
@@ -263,7 +313,7 @@
       "mask_variant": "25",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_25.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_pt_force_vector_transfer_mask_25",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -292,7 +342,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -301,8 +350,19 @@
         "--experiment_name",
         "next_token_pt_force_vector_transfer_mask_25"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "next_token_pt_force_vector_transfer_mask_25",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "next_token_force_law_pt_force_vector_transfer_mask_25",
@@ -310,7 +370,7 @@
       "mask_variant": "25",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_25.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_force_law_pt_force_vector_transfer_mask_25",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -339,7 +399,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -348,8 +407,19 @@
         "--experiment_name",
         "next_token_force_law_pt_force_vector_transfer_mask_25"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "next_token_force_law_pt_force_vector_transfer_mask_25",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "next_token_force_aux_pt_force_vector_transfer_mask_25",
@@ -357,7 +427,7 @@
       "mask_variant": "25",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_25.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_force_aux_pt_force_vector_transfer_mask_25",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -386,7 +456,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -395,8 +464,19 @@
         "--experiment_name",
         "next_token_force_aux_pt_force_vector_transfer_mask_25"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "next_token_force_aux_pt_force_vector_transfer_mask_25",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "force_vector_scratch_mask_50",
@@ -404,7 +484,7 @@
       "mask_variant": "50",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_50.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/force_vector_scratch_mask_50",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -433,7 +513,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -442,8 +521,19 @@
         "--experiment_name",
         "force_vector_scratch_mask_50"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "force_vector_scratch_mask_50",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "next_token_pt_force_vector_transfer_mask_50",
@@ -451,7 +541,7 @@
       "mask_variant": "50",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_50.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_pt_force_vector_transfer_mask_50",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -480,7 +570,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -489,8 +578,19 @@
         "--experiment_name",
         "next_token_pt_force_vector_transfer_mask_50"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "next_token_pt_force_vector_transfer_mask_50",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "next_token_force_law_pt_force_vector_transfer_mask_50",
@@ -498,7 +598,7 @@
       "mask_variant": "50",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_50.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_force_law_pt_force_vector_transfer_mask_50",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -527,7 +627,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -536,8 +635,19 @@
         "--experiment_name",
         "next_token_force_law_pt_force_vector_transfer_mask_50"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "next_token_force_law_pt_force_vector_transfer_mask_50",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "next_token_force_aux_pt_force_vector_transfer_mask_50",
@@ -545,7 +655,7 @@
       "mask_variant": "50",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_50.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_force_aux_pt_force_vector_transfer_mask_50",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -574,7 +684,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -583,8 +692,19 @@
         "--experiment_name",
         "next_token_force_aux_pt_force_vector_transfer_mask_50"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "next_token_force_aux_pt_force_vector_transfer_mask_50",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "force_vector_scratch_mask_100",
@@ -592,7 +712,7 @@
       "mask_variant": "100",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_100.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/force_vector_scratch_mask_100",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -621,7 +741,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -630,8 +749,19 @@
         "--experiment_name",
         "force_vector_scratch_mask_100"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "force_vector_scratch_mask_100",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "next_token_pt_force_vector_transfer_mask_100",
@@ -639,7 +769,7 @@
       "mask_variant": "100",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_100.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_pt_force_vector_transfer_mask_100",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -668,7 +798,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -677,8 +806,19 @@
         "--experiment_name",
         "next_token_pt_force_vector_transfer_mask_100"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "next_token_pt_force_vector_transfer_mask_100",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "next_token_force_law_pt_force_vector_transfer_mask_100",
@@ -686,7 +826,7 @@
       "mask_variant": "100",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_100.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_force_law_pt_force_vector_transfer_mask_100",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -715,7 +855,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -724,8 +863,19 @@
         "--experiment_name",
         "next_token_force_law_pt_force_vector_transfer_mask_100"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "next_token_force_law_pt_force_vector_transfer_mask_100",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "next_token_force_aux_pt_force_vector_transfer_mask_100",
@@ -733,7 +883,7 @@
       "mask_variant": "100",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_100.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_force_aux_pt_force_vector_transfer_mask_100",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -762,7 +912,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -771,8 +920,19 @@
         "--experiment_name",
         "next_token_force_aux_pt_force_vector_transfer_mask_100"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "next_token_force_aux_pt_force_vector_transfer_mask_100",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "force_vector_scratch_mask_all",
@@ -780,7 +940,7 @@
       "mask_variant": "all",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_all.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/force_vector_scratch_mask_all",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -809,7 +969,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -818,8 +977,19 @@
         "--experiment_name",
         "force_vector_scratch_mask_all"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "force_vector_scratch_mask_all",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "next_token_pt_force_vector_transfer_mask_all",
@@ -827,7 +997,7 @@
       "mask_variant": "all",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_all.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_pt_force_vector_transfer_mask_all",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -856,7 +1026,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -865,8 +1034,19 @@
         "--experiment_name",
         "next_token_pt_force_vector_transfer_mask_all"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "next_token_pt_force_vector_transfer_mask_all",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "next_token_force_law_pt_force_vector_transfer_mask_all",
@@ -874,7 +1054,7 @@
       "mask_variant": "all",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_all.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_force_law_pt_force_vector_transfer_mask_all",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -903,7 +1083,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -912,8 +1091,19 @@
         "--experiment_name",
         "next_token_force_law_pt_force_vector_transfer_mask_all"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "next_token_force_law_pt_force_vector_transfer_mask_all",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     },
     {
       "experiment_name": "next_token_force_aux_pt_force_vector_transfer_mask_all",
@@ -921,7 +1111,7 @@
       "mask_variant": "all",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_all.npy",
       "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_force_aux_pt_force_vector_transfer_mask_all",
-      "status": "trained",
+      "status": "existing_training_summary",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
@@ -950,7 +1140,6 @@
         "--no_wandb",
         "--no_compile"
       ],
-      "train_returncode": 0,
       "plot_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
         "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
@@ -959,8 +1148,19 @@
         "--experiment_name",
         "next_token_force_aux_pt_force_vector_transfer_mask_all"
       ],
-      "plot_returncode": 0,
-      "plot_status": "plotted"
+      "plot_status": "existing_plot_summary",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "next_token_force_aux_pt_force_vector_transfer_mask_all",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
     }
   ]
 }
