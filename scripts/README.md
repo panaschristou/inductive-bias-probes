@@ -75,6 +75,14 @@ SCALE_TAG=10k MASK_VARIANTS=25 MAX_ITERS=5000 sbatch scripts/nersc_03_force_mask
 SCALE_TAG=100k MASK_VARIANTS=25 MAX_ITERS=10000 sbatch scripts/nersc_03_force_mask_sweep.sh
 ```
 
+To queue pretraining and have the mask sweep start only after every pretraining
+array task succeeds, submit with a Slurm dependency:
+
+```bash
+PRETRAIN_JOB=$(PROJECT_ROOT=$PWD SCALE_TAG=100k NUM_DATA_POINTS=100000 MAX_ITERS=6250 EVAL_INTERVAL=100 sbatch --parsable -t 08:00:00 scripts/nersc_02_pretrain_physics_models.sh)
+PROJECT_ROOT=$PWD SCALE_TAG=100k MASK_VARIANTS=25 MAX_ITERS=10000 sbatch --dependency=afterok:${PRETRAIN_JOB} -t 08:00:00 scripts/nersc_03_force_mask_sweep.sh
+```
+
 For stress/control masks:
 
 ```bash

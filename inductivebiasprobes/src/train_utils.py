@@ -172,6 +172,15 @@ def add_common_args(parser):
         help="Number of iterations for evaluation",
     )
     parser.add_argument(
+        "--num_data_points",
+        type=int,
+        default=None,
+        help=(
+            "Number of training trajectories to sample from the train file. "
+            "Overrides the config YAML num_data_points when set."
+        ),
+    )
+    parser.add_argument(
         "--gradient_accumulation_steps",
         type=int,
         default=1,
