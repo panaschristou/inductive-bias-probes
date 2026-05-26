@@ -49,6 +49,15 @@ def parse_args():
         ),
     )
     parser.add_argument("--model_type", type=str, default="gpt")
+    parser.add_argument(
+        "--experiment_suffix",
+        type=str,
+        default="",
+        help=(
+            "Optional suffix appended to generated experiment names, e.g. "
+            "'_full' to keep full-dataset runs separate from pilot runs."
+        ),
+    )
     parser.add_argument("--max_iters", type=int, default=1000)
     parser.add_argument("--eval_interval", type=int, default=50)
     parser.add_argument("--eval_iters", type=int, default=1)
@@ -182,11 +191,12 @@ def make_mask_variant(variant, seed=0, force=False):
     return out_path
 
 
-def experiment_name(pretrained, variant):
-    suffix = mask_suffix(variant)
+def experiment_name(pretrained, variant, suffix=""):
+    variant_suffix = mask_suffix(variant)
+    experiment_suffix = str(suffix)
     if pretrained == "scratch":
-        return f"force_vector_scratch_mask_{suffix}"
-    return f"{pretrained}_pt_force_vector_transfer_mask_{suffix}"
+        return f"force_vector_scratch_mask_{variant_suffix}{experiment_suffix}"
+    return f"{pretrained}_pt_force_vector_transfer_mask_{variant_suffix}{experiment_suffix}"
 
 
 def run_command(cmd, dry_run=False):
@@ -208,7 +218,7 @@ def collect_sweep_summary(args, sweep_output_dir):
     for variant in args.mask_variants:
         variant_suffix = mask_suffix(variant)
         for pretrained in args.pretrained:
-            run_name = experiment_name(pretrained, variant)
+            run_name = experiment_name(pretrained, variant, args.experiment_suffix)
             run_output_dir = PHYSICS_OUTPUT_DIR / args.model_type / run_name
             best_path = run_output_dir / "best_metrics.json"
             history_path = run_output_dir / "metrics_history.json"
@@ -332,6 +342,7 @@ def main():
         "mask_variants": args.mask_variants,
         "pretrained": args.pretrained,
         "model_type": args.model_type,
+        "experiment_suffix": args.experiment_suffix,
         "max_iters": args.max_iters,
         "eval_interval": args.eval_interval,
         "eval_iters": args.eval_iters,
@@ -354,7 +365,7 @@ def main():
     for variant in args.mask_variants:
         variant_suffix = mask_suffix(variant)
         for pretrained in args.pretrained:
-            run_name = experiment_name(pretrained, variant)
+            run_name = experiment_name(pretrained, variant, args.experiment_suffix)
             run_output_dir = PHYSICS_OUTPUT_DIR / args.model_type / run_name
             summary_path = run_output_dir / "training_summary.json"
             run_record = {
