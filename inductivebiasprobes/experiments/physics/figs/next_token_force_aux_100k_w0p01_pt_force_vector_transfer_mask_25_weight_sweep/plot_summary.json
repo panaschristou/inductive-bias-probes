@@ -1,0 +1,21 @@
+{
+  "experiment_name": "next_token_force_aux_100k_w0p01_pt_force_vector_transfer_mask_25_weight_sweep",
+  "model_type": "gpt",
+  "checkpoint_path": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/checkpoints/physics/gpt/next_token_force_aux_100k_w0p01_pt_force_vector_transfer_mask_25_weight_sweep/ckpt.pt",
+  "device": "cuda",
+  "output_dirs": [
+    "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_force_aux_100k_w0p01_pt_force_vector_transfer_mask_25_weight_sweep/figs",
+    "figs/next_token_force_aux_100k_w0p01_pt_force_vector_transfer_mask_25_weight_sweep"
+  ],
+  "force_pdfs": [
+    "force_mercury.pdf",
+    "force_venus.pdf",
+    "force_earth.pdf",
+    "force_mars.pdf",
+    "force_jupiter.pdf",
+    "force_saturn.pdf",
+    "force_uranus.pdf",
+    "force_neptune.pdf"
+  ],
+  "animation_gif": null
+}

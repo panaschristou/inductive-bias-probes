@@ -1,0 +1,33 @@
+{
+  "run_name": "pt_next_token_force_law_100k_w0p1_gpt",
+  "model_type": "gpt",
+  "predict_type": "force_vector",
+  "pretrained": "next_token_force_law_100k_w0p1",
+  "experiment_name": "next_token_force_law_100k_w0p1_pt_force_vector_transfer_mask_25_weight_sweep",
+  "ckpt_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/checkpoints/physics/gpt/next_token_force_law_100k_w0p1_pt_force_vector_transfer_mask_25_weight_sweep",
+  "run_output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_force_law_100k_w0p1_pt_force_vector_transfer_mask_25_weight_sweep",
+  "max_iters": 10000,
+  "eval_interval": 50,
+  "best_record": {
+    "iter": 99,
+    "epoch": 99,
+    "train_loss_mean": 0.03608095273375511,
+    "val_loss_mean": 0.22304709255695343,
+    "learning_rate": 0.0006,
+    "train_task_loss_mean": 0.03608095273375511,
+    "train_total_loss_mean": 0.03608095273375511,
+    "val_task_loss_mean": 0.22304709255695343,
+    "val_total_loss_mean": 0.22304709255695343
+  },
+  "last_record": {
+    "iter": 9999,
+    "epoch": 9999,
+    "train_loss_mean": 0.00024755788035690784,
+    "val_loss_mean": 0.5890008807182312,
+    "learning_rate": 0.0006,
+    "train_task_loss_mean": 0.00024755788035690784,
+    "train_total_loss_mean": 0.00024755788035690784,
+    "val_task_loss_mean": 0.5890008807182312,
+    "val_total_loss_mean": 0.5890008807182312
+  }
+}
