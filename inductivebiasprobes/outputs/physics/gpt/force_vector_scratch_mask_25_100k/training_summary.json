@@ -1,0 +1,33 @@
+{
+  "run_name": "pt_scratch_gpt",
+  "model_type": "gpt",
+  "predict_type": "force_vector",
+  "pretrained": "scratch",
+  "experiment_name": "force_vector_scratch_mask_25_100k",
+  "ckpt_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/checkpoints/physics/gpt/force_vector_scratch_mask_25_100k",
+  "run_output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/force_vector_scratch_mask_25_100k",
+  "max_iters": 10000,
+  "eval_interval": 50,
+  "best_record": {
+    "iter": 249,
+    "epoch": 249,
+    "train_loss_mean": 0.019596386700868607,
+    "val_loss_mean": 0.37347185611724854,
+    "learning_rate": 0.0006,
+    "train_task_loss_mean": 0.019596386700868607,
+    "train_total_loss_mean": 0.019596386700868607,
+    "val_task_loss_mean": 0.37347185611724854,
+    "val_total_loss_mean": 0.37347185611724854
+  },
+  "last_record": {
+    "iter": 9999,
+    "epoch": 9999,
+    "train_loss_mean": 0.0001693060912657529,
+    "val_loss_mean": 0.7426626682281494,
+    "learning_rate": 0.0006,
+    "train_task_loss_mean": 0.0001693060912657529,
+    "train_total_loss_mean": 0.0001693060912657529,
+    "val_task_loss_mean": 0.7426626682281494,
+    "val_total_loss_mean": 0.7426626682281494
+  }
+}
