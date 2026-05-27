@@ -83,6 +83,24 @@ PRETRAIN_JOB=$(PROJECT_ROOT=$PWD SCALE_TAG=100k NUM_DATA_POINTS=100000 MAX_ITERS
 PROJECT_ROOT=$PWD SCALE_TAG=100k MASK_VARIANTS=25 MAX_ITERS=10000 sbatch --dependency=afterok:${PRETRAIN_JOB} -t 08:00:00 scripts/nersc_03_force_mask_sweep.sh
 ```
 
+## Physics Loss-Weight Sweep
+
+After the 100k result, sweep smaller force-law and force-aux weights from an
+interactive GPU allocation:
+
+```bash
+python scripts/run_physics_weight_sweep.py --skip_existing --skip_animation --include_baselines
+```
+
+This defaults to:
+
+- scale: `100k`
+- weights: `0.01 0.03 0.05 0.1`
+- objectives: `force_law force_aux`
+- mask variant: `25`
+- output summary:
+  `inductivebiasprobes/outputs/physics/gpt/force_weight_sweep_100k/weight_sweep_summary.csv`
+
 For stress/control masks:
 
 ```bash
