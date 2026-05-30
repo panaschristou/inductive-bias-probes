@@ -1,16 +1,17 @@
 {
-  "created_at": "2026-05-26T23:53:24.180701+00:00",
+  "created_at": "2026-05-30T01:10:13.191620+00:00",
   "mask_variants": [
     "25"
   ],
   "pretrained": [
     "scratch",
-    "next_token_100k",
-    "next_token_force_law_100k",
-    "next_token_force_aux_100k"
+    "next_token_100k_equal",
+    "next_token_force_law_100k_equal_w0p01",
+    "next_token_force_aux_100k_equal_w0p03",
+    "next_token_force_aux_100k_equal_w0p05"
   ],
   "model_type": "gpt",
-  "experiment_suffix": "_100k",
+  "experiment_suffix": "_100k_equal",
   "max_iters": 10000,
   "eval_interval": 50,
   "eval_iters": 1,
@@ -20,11 +21,11 @@
   "seed": 0,
   "runs": [
     {
-      "experiment_name": "force_vector_scratch_mask_25_100k",
+      "experiment_name": "force_vector_scratch_mask_25_100k_equal",
       "pretrained": "scratch",
       "mask_variant": "25",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_25.npy",
-      "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/force_vector_scratch_mask_25_100k",
+      "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/force_vector_scratch_mask_25_100k_equal",
       "status": "trained",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
@@ -36,7 +37,7 @@
         "--pretrained",
         "scratch",
         "--experiment_name",
-        "force_vector_scratch_mask_25_100k",
+        "force_vector_scratch_mask_25_100k_equal",
         "--force_vector_mask_variant",
         "25",
         "--max_iters",
@@ -61,7 +62,7 @@
         "--model_type",
         "gpt",
         "--experiment_name",
-        "force_vector_scratch_mask_25_100k"
+        "force_vector_scratch_mask_25_100k_equal"
       ],
       "plot_returncode": 0,
       "plot_status": "plotted",
@@ -71,7 +72,7 @@
         "--model_type",
         "gpt",
         "--experiment_name",
-        "force_vector_scratch_mask_25_100k",
+        "force_vector_scratch_mask_25_100k_equal",
         "--device",
         "cuda"
       ],
@@ -79,11 +80,11 @@
       "physics_metrics_status": "evaluated"
     },
     {
-      "experiment_name": "next_token_100k_pt_force_vector_transfer_mask_25_100k",
-      "pretrained": "next_token_100k",
+      "experiment_name": "next_token_100k_equal_pt_force_vector_transfer_mask_25_100k_equal",
+      "pretrained": "next_token_100k_equal",
       "mask_variant": "25",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_25.npy",
-      "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_100k_pt_force_vector_transfer_mask_25_100k",
+      "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_100k_equal_pt_force_vector_transfer_mask_25_100k_equal",
       "status": "trained",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
@@ -93,9 +94,9 @@
         "--model_type",
         "gpt",
         "--pretrained",
-        "next_token_100k",
+        "next_token_100k_equal",
         "--experiment_name",
-        "next_token_100k_pt_force_vector_transfer_mask_25_100k",
+        "next_token_100k_equal_pt_force_vector_transfer_mask_25_100k_equal",
         "--force_vector_mask_variant",
         "25",
         "--max_iters",
@@ -120,7 +121,7 @@
         "--model_type",
         "gpt",
         "--experiment_name",
-        "next_token_100k_pt_force_vector_transfer_mask_25_100k"
+        "next_token_100k_equal_pt_force_vector_transfer_mask_25_100k_equal"
       ],
       "plot_returncode": 0,
       "plot_status": "plotted",
@@ -130,7 +131,7 @@
         "--model_type",
         "gpt",
         "--experiment_name",
-        "next_token_100k_pt_force_vector_transfer_mask_25_100k",
+        "next_token_100k_equal_pt_force_vector_transfer_mask_25_100k_equal",
         "--device",
         "cuda"
       ],
@@ -138,11 +139,11 @@
       "physics_metrics_status": "evaluated"
     },
     {
-      "experiment_name": "next_token_force_law_100k_pt_force_vector_transfer_mask_25_100k",
-      "pretrained": "next_token_force_law_100k",
+      "experiment_name": "next_token_force_law_100k_equal_w0p01_pt_force_vector_transfer_mask_25_100k_equal",
+      "pretrained": "next_token_force_law_100k_equal_w0p01",
       "mask_variant": "25",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_25.npy",
-      "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_force_law_100k_pt_force_vector_transfer_mask_25_100k",
+      "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_force_law_100k_equal_w0p01_pt_force_vector_transfer_mask_25_100k_equal",
       "status": "trained",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
@@ -152,9 +153,9 @@
         "--model_type",
         "gpt",
         "--pretrained",
-        "next_token_force_law_100k",
+        "next_token_force_law_100k_equal_w0p01",
         "--experiment_name",
-        "next_token_force_law_100k_pt_force_vector_transfer_mask_25_100k",
+        "next_token_force_law_100k_equal_w0p01_pt_force_vector_transfer_mask_25_100k_equal",
         "--force_vector_mask_variant",
         "25",
         "--max_iters",
@@ -179,7 +180,7 @@
         "--model_type",
         "gpt",
         "--experiment_name",
-        "next_token_force_law_100k_pt_force_vector_transfer_mask_25_100k"
+        "next_token_force_law_100k_equal_w0p01_pt_force_vector_transfer_mask_25_100k_equal"
       ],
       "plot_returncode": 0,
       "plot_status": "plotted",
@@ -189,7 +190,7 @@
         "--model_type",
         "gpt",
         "--experiment_name",
-        "next_token_force_law_100k_pt_force_vector_transfer_mask_25_100k",
+        "next_token_force_law_100k_equal_w0p01_pt_force_vector_transfer_mask_25_100k_equal",
         "--device",
         "cuda"
       ],
@@ -197,11 +198,11 @@
       "physics_metrics_status": "evaluated"
     },
     {
-      "experiment_name": "next_token_force_aux_100k_pt_force_vector_transfer_mask_25_100k",
-      "pretrained": "next_token_force_aux_100k",
+      "experiment_name": "next_token_force_aux_100k_equal_w0p03_pt_force_vector_transfer_mask_25_100k_equal",
+      "pretrained": "next_token_force_aux_100k_equal_w0p03",
       "mask_variant": "25",
       "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_25.npy",
-      "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_force_aux_100k_pt_force_vector_transfer_mask_25_100k",
+      "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_force_aux_100k_equal_w0p03_pt_force_vector_transfer_mask_25_100k_equal",
       "status": "trained",
       "train_command": [
         "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
@@ -211,9 +212,9 @@
         "--model_type",
         "gpt",
         "--pretrained",
-        "next_token_force_aux_100k",
+        "next_token_force_aux_100k_equal_w0p03",
         "--experiment_name",
-        "next_token_force_aux_100k_pt_force_vector_transfer_mask_25_100k",
+        "next_token_force_aux_100k_equal_w0p03_pt_force_vector_transfer_mask_25_100k_equal",
         "--force_vector_mask_variant",
         "25",
         "--max_iters",
@@ -238,7 +239,7 @@
         "--model_type",
         "gpt",
         "--experiment_name",
-        "next_token_force_aux_100k_pt_force_vector_transfer_mask_25_100k"
+        "next_token_force_aux_100k_equal_w0p03_pt_force_vector_transfer_mask_25_100k_equal"
       ],
       "plot_returncode": 0,
       "plot_status": "plotted",
@@ -248,7 +249,66 @@
         "--model_type",
         "gpt",
         "--experiment_name",
-        "next_token_force_aux_100k_pt_force_vector_transfer_mask_25_100k",
+        "next_token_force_aux_100k_equal_w0p03_pt_force_vector_transfer_mask_25_100k_equal",
+        "--device",
+        "cuda"
+      ],
+      "physics_metrics_returncode": 0,
+      "physics_metrics_status": "evaluated"
+    },
+    {
+      "experiment_name": "next_token_force_aux_100k_equal_w0p05_pt_force_vector_transfer_mask_25_100k_equal",
+      "pretrained": "next_token_force_aux_100k_equal_w0p05",
+      "mask_variant": "25",
+      "mask_file": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/data/physics/force_vector_solar_system_two_body_masked_25.npy",
+      "output_dir": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/next_token_force_aux_100k_equal_w0p05_pt_force_vector_transfer_mask_25_100k_equal",
+      "status": "trained",
+      "train_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/train_model.py",
+        "--config",
+        "force_vector_config",
+        "--model_type",
+        "gpt",
+        "--pretrained",
+        "next_token_force_aux_100k_equal_w0p05",
+        "--experiment_name",
+        "next_token_force_aux_100k_equal_w0p05_pt_force_vector_transfer_mask_25_100k_equal",
+        "--force_vector_mask_variant",
+        "25",
+        "--max_iters",
+        "10000",
+        "--eval_interval",
+        "50",
+        "--eval_iters",
+        "1",
+        "--batch_size",
+        "8",
+        "--dtype",
+        "bfloat16",
+        "--device",
+        "cuda",
+        "--no_wandb",
+        "--no_compile"
+      ],
+      "train_returncode": 0,
+      "plot_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/plot_forces.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "next_token_force_aux_100k_equal_w0p05_pt_force_vector_transfer_mask_25_100k_equal"
+      ],
+      "plot_returncode": 0,
+      "plot_status": "plotted",
+      "physics_metrics_command": [
+        "/pscratch/sd/b/bleach/inductive-bias-probes/.venv/bin/python",
+        "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/experiments/physics/evaluate_force_physics_metrics.py",
+        "--model_type",
+        "gpt",
+        "--experiment_name",
+        "next_token_force_aux_100k_equal_w0p05_pt_force_vector_transfer_mask_25_100k_equal",
         "--device",
         "cuda"
       ],
