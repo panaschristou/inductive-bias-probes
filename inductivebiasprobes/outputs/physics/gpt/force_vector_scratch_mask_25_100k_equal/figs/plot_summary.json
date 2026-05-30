@@ -1,0 +1,21 @@
+{
+  "experiment_name": "force_vector_scratch_mask_25_100k_equal",
+  "model_type": "gpt",
+  "checkpoint_path": "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/checkpoints/physics/gpt/force_vector_scratch_mask_25_100k_equal/ckpt.pt",
+  "device": "cuda",
+  "output_dirs": [
+    "/pscratch/sd/b/bleach/inductive-bias-probes/inductivebiasprobes/outputs/physics/gpt/force_vector_scratch_mask_25_100k_equal/figs",
+    "figs/force_vector_scratch_mask_25_100k_equal"
+  ],
+  "force_pdfs": [
+    "force_mercury.pdf",
+    "force_venus.pdf",
+    "force_earth.pdf",
+    "force_mars.pdf",
+    "force_jupiter.pdf",
+    "force_saturn.pdf",
+    "force_uranus.pdf",
+    "force_neptune.pdf"
+  ],
+  "animation_gif": "forces_earth.gif"
+}
